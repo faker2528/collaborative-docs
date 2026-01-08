@@ -1,0 +1,94 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:nacos:${spring.application.name}.yaml
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER:192.168.232.128:8848}
+        namespace: ${NACOS_NAMESPACE:public}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_SERVER:192.168.232.128:8848}
+        namespace: ${NACOS_NAMESPACE:public}
+        file-extension: yaml
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+
+        # 好友服务路由（user-service）
+        - id: friend-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/friend/**
+          filters:
+            - StripPrefix=1
+
+        # 文档服务路由
+        - id: document-service
+          uri: lb://document-service
+          predicates:
+            - Path=/api/document/**
+          filters:
+            - StripPrefix=1
+
+        # 分享链接服务路由（document-service）
+        - id: share-service
+          uri: lb://document-service
+          predicates:
+            - Path=/api/share/**
+          filters:
+            - StripPrefix=1
+
+        # 协作服务REST路由
+        - id: collaboration-service
+          uri: lb://collaboration-service
+          predicates:
+            - Path=/api/collaboration/**
+          filters:
+            - StripPrefix=1
+
+        # 协作服务WebSocket路由
+        - id: collaboration-ws
+          uri: lb:ws://collaboration-service
+          predicates:
+            - Path=/ws/**
+
+        # 历史服务路由
+        - id: history-service
+          uri: lb://history-service
+          predicates:
+            - Path=/api/history/**
+          filters:
+            - StripPrefix=1
+
+  data:
+    redis:
+      host: ${REDIS_HOST:192.168.232.128}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:160424}
+      database: 0
+
+logging:
+  level:
+    com.collab: ${LOG_LEVEL:DEBUG}
+    org.springframework.cloud.gateway: ${LOG_LEVEL:DEBUG}
