@@ -92,12 +92,13 @@ public class CollaborationRoomManager {
     }
 
     /**
-     * 获取房间内的所有用户
+     * 获取房间内的所有用户（返回副本，避免并发问题）
      */
     public Collection<CollaborationUser> getRoomUsers(Long documentId) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
-            return room.getUsers().values();
+            // 返回副本而不是 live view，避免并发修改问题
+            return new java.util.ArrayList<>(room.getUsers().values());
         }
         return java.util.Collections.emptyList();
     }
@@ -125,10 +126,17 @@ public class CollaborationRoomManager {
     }
 
     /**
-     * 初始化文档内容
+     * 初始化文档内容（只在房间为空时初始化，避免重复加载）
      */
-    public void initDocumentContent(Long documentId, String content) {
+    public synchronized void initDocumentContent(Long documentId, String content) {
         CollaborationRoom room = getOrCreateRoom(documentId);
+        
+        // 检查房间是否已经初始化过内容（避免重复加载）
+        if (room.isContentInitialized()) {
+            log.debug("Room {} content already initialized, skip", documentId);
+            return;
+        }
+        
         // 将内容初始化到 CRDT 文档
         if (content != null && !content.isEmpty()) {
             // 尝试解析为 Delta
@@ -152,6 +160,9 @@ public class CollaborationRoomManager {
             }
             room.getCrdtDocument().initFromText(textContent);
         }
+        
+        // 标记已初始化
+        room.setContentInitialized(true);
         log.info("Initialized document {} with content length: {}", documentId, content != null ? content.length() : 0);
     }
 

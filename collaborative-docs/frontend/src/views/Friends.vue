@@ -34,7 +34,12 @@
               :key="friend.id" 
               class="friend-item"
             >
-              <el-avatar :size="48" :src="friend.avatar">
+              <el-avatar 
+                :size="48" 
+                :src="friend.avatar"
+                class="clickable-avatar"
+                @click.stop="goToUserProfile(friend.id)"
+              >
                 {{ friend.nickname?.charAt(0) || friend.username?.charAt(0) }}
               </el-avatar>
               <div class="friend-info">
@@ -69,7 +74,12 @@
                   :key="req.id" 
                   class="request-item"
                 >
-                  <el-avatar :size="40" :src="req.fromAvatar">
+                  <el-avatar 
+                    :size="40" 
+                    :src="req.fromAvatar"
+                    class="clickable-avatar"
+                    @click.stop="goToUserProfile(req.senderId)"
+                  >
                     {{ req.fromNickname?.charAt(0) || req.fromUsername?.charAt(0) }}
                   </el-avatar>
                   <div class="request-info">
@@ -135,7 +145,11 @@
             :class="{ selected: addForm.selectedUser?.id === user.id }"
             @click="addForm.selectedUser = user"
           >
-            <el-avatar :size="36">{{ user.username.charAt(0) }}</el-avatar>
+            <el-avatar 
+              :size="36" 
+              class="clickable-avatar"
+              @click.stop="goToUserProfile(user.id)"
+            >{{ user.username.charAt(0) }}</el-avatar>
             <div class="user-info">
               <span class="username">{{ user.username }}</span>
               <span class="nickname" v-if="user.nickname">({{ user.nickname }})</span>
@@ -169,6 +183,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   getFriendList, 
@@ -181,6 +196,7 @@ import {
 } from '@/api/friend'
 import { searchUsers } from '@/api/user'
 
+const router = useRouter()
 const friends = ref([])
 const receivedRequests = ref([])
 const sentRequests = ref([])
@@ -355,6 +371,14 @@ function getStatusText(status) {
   const texts = { 0: '待处理', 1: '已同意', 2: '已拒绝' }
   return texts[status] || '未知'
 }
+
+// 跳转到用户主页
+function goToUserProfile(userId) {
+  console.log('goToUserProfile called with userId:', userId)
+  if (userId) {
+    router.push(`/user/${userId}`)
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -496,5 +520,15 @@ function getStatusText(status) {
   text-align: center;
   padding: 20px;
   color: #909399;
+}
+
+.clickable-avatar {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
 }
 </style>

@@ -63,7 +63,7 @@ public class UserController {
      * 根据ID获取用户信息
      */
     @GetMapping("/{userId}")
-    public Result<UserDTO> getUserById(@PathVariable Long userId) {
+    public Result<UserDTO> getUserById(@PathVariable("userId") Long userId) {
         UserDTO user = userService.getUserInfo(userId);
         return Result.success(user);
     }

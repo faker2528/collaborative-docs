@@ -57,6 +57,11 @@ public class CollaborationRoom {
      * 文档是否有未保存的编辑
      */
     private volatile boolean dirty = false;
+    
+    /**
+     * 内容是否已初始化（避免重复加载）
+     */
+    private volatile boolean contentInitialized = false;
 
     public CollaborationRoom(Long documentId) {
         this.documentId = documentId;

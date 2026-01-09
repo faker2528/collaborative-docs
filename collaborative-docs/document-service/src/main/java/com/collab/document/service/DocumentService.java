@@ -2,6 +2,7 @@ package com.collab.document.service;
 
 import com.collab.common.dto.CreateDocumentRequest;
 import com.collab.common.dto.DocumentDTO;
+import com.collab.common.dto.DocumentMemberDTO;
 
 import java.util.List;
 
@@ -44,4 +45,19 @@ public interface DocumentService {
      * 检查用户对文档的权限
      */
     boolean hasPermission(Long documentId, Long userId, Integer requiredPermission);
+    
+    /**
+     * 获取文档成员列表
+     */
+    List<DocumentMemberDTO> getDocumentMembers(Long documentId, Long userId);
+    
+    /**
+     * 修改成员权限
+     */
+    void updateMemberPermission(Long documentId, Long targetUserId, Integer permissionType, Long operatorId);
+    
+    /**
+     * 移除文档成员
+     */
+    void removeMember(Long documentId, Long targetUserId, Long operatorId);
 }

@@ -379,11 +379,11 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         if (user != null) {
             Long documentId = user.getDocumentId();
             
-            // 广播用户离开消息
-            broadcastUserLeft(documentId, user);
-            
-            // 移除用户
+            // 先从房间移除用户（这样 getOnlineUsers 获取的列表才是正确的）
             roomManager.leaveRoom(documentId, session.getId());
+            
+            // 再广播用户离开消息（此时在线列表已更新）
+            broadcastUserLeft(documentId, user);
             
             // 检查房间是否为空，如果为空则保存文档内容
             CollaborationRoom room = roomManager.getRoom(documentId);

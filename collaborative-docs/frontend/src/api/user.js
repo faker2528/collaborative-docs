@@ -16,6 +16,10 @@ export function getUserInfo() {
   return request.get('/user/info')
 }
 
+export function getUserById(userId) {
+  return request.get(`/user/${userId}`)
+}
+
 export function searchUsers(keyword) {
   return request.get('/user/search', { params: { keyword } })
 }

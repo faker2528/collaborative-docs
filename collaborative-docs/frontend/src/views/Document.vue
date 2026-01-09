@@ -17,16 +17,21 @@
         <!-- 在线用户 -->
         <div class="online-users">
           <span class="label">在线:</span>
-          <el-avatar-group :size="28" :max="5">
-            <el-tooltip 
+          <div class="avatar-list">
+            <div 
               v-for="user in onlineUsers" 
-              :key="user.siteId" 
-              :content="user.username"
-              placement="bottom"
+              :key="user.siteId"
+              class="avatar-wrapper"
+              @click="goToUserProfile(user.userId)"
             >
-              <el-avatar>{{ user.username.charAt(0) }}</el-avatar>
-            </el-tooltip>
-          </el-avatar-group>
+              <el-tooltip :content="user.username" placement="bottom">
+                <el-avatar 
+                  :size="28"
+                  class="clickable-avatar"
+                >{{ user.username?.charAt(0) }}</el-avatar>
+              </el-tooltip>
+            </div>
+          </div>
         </div>
         
         <el-button type="primary" size="small" @click="saveDocument">
@@ -37,6 +42,11 @@
         <el-button type="success" size="small" @click="showInviteDialog = true">
           <el-icon><Share /></el-icon>
           邀请协作
+        </el-button>
+        
+        <el-button type="warning" size="small" @click="openManageDialog">
+          <el-icon><Setting /></el-icon>
+          管理
         </el-button>
       </div>
     </div>
@@ -73,12 +83,21 @@
               </div>
             </div>
             
-            <el-form-item label="权限类型" v-if="inviteForm.selectedUser" style="margin-top: 16px;">
+            <el-form-item label="权限类型" v-if="inviteForm.selectedUser && isDocumentCreator" style="margin-top: 16px;">
               <el-radio-group v-model="inviteForm.permissionType">
                 <el-radio :value="1">只读</el-radio>
                 <el-radio :value="2">可编辑</el-radio>
               </el-radio-group>
             </el-form-item>
+            
+            <el-alert 
+              v-if="inviteForm.selectedUser && !isDocumentCreator" 
+              type="info" 
+              :closable="false"
+              style="margin-top: 16px;"
+            >
+              您不是文档创建者，邀请的用户将以只读权限加入
+            </el-alert>
             
             <div class="selected-user-tip" v-if="inviteForm.selectedUser">
               已选择: <strong>{{ inviteForm.selectedUser.nickname || inviteForm.selectedUser.username }}</strong>
@@ -97,12 +116,21 @@
         <el-tab-pane label="生成分享链接" name="link">
           <div class="invite-dialog-content">
             <el-form :model="shareLinkForm" label-width="100px">
-              <el-form-item label="权限类型">
+              <el-form-item label="权限类型" v-if="isDocumentCreator">
                 <el-radio-group v-model="shareLinkForm.permissionType">
                   <el-radio :value="1">只读</el-radio>
                   <el-radio :value="2">可编辑</el-radio>
                 </el-radio-group>
               </el-form-item>
+              
+              <el-alert 
+                v-if="!isDocumentCreator" 
+                type="info" 
+                :closable="false"
+                style="margin-bottom: 16px;"
+              >
+                您不是文档创建者，生成的链接只能为只读权限
+              </el-alert>
               
               <el-form-item label="有效期">
                 <el-select v-model="shareLinkForm.validDays" style="width: 100%;">
@@ -146,24 +174,84 @@
         </el-tab-pane>
       </el-tabs>
     </el-dialog>
+    <!-- 文档管理对话框 -->
+    <el-dialog v-model="showManageDialog" title="文档管理" width="550px">
+      <div class="manage-dialog-content">
+        <h4 style="margin: 0 0 16px;">文档成员 ({{ documentMembers.length }})</h4>
+        
+        <el-empty v-if="documentMembers.length === 0" description="暂无成员"></el-empty>
+        
+        <div v-else class="member-list">
+          <div v-for="member in documentMembers" :key="member.userId" class="member-item">
+            <el-avatar 
+              :size="36" 
+              class="clickable-avatar"
+              @click.stop="goToUserProfile(member.userId)"
+            >{{ member.username?.charAt(0) }}</el-avatar>
+            <div class="member-info">
+              <span class="username">{{ member.nickname || member.username }}</span>
+              <el-tag v-if="member.isCreator" type="warning" size="small">创建者</el-tag>
+            </div>
+            
+            <div class="member-actions">
+              <el-select 
+                v-if="!member.isCreator && isDocumentCreator" 
+                v-model="member.permissionType" 
+                size="small"
+                style="width: 100px;"
+                @change="handlePermissionChange(member)"
+              >
+                <el-option :value="1" label="只读" />
+                <el-option :value="2" label="可编辑" />
+              </el-select>
+              
+              <el-tag v-if="!member.isCreator && !isDocumentCreator" size="small">
+                {{ member.permissionType === 2 ? '可编辑' : '只读' }}
+              </el-tag>
+              
+              <el-button 
+                v-if="!member.isCreator && isDocumentCreator" 
+                type="danger" 
+                size="small"
+                text
+                @click="handleRemoveMember(member)"
+              >
+                移除
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="showManageDialog = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { useDocumentStore } from '@/stores/document'
 import { useUserStore } from '@/stores/user'
-import { updateDocument, shareDocument, createShareLink } from '@/api/document'
+import { updateDocument, shareDocument, createShareLink, getDocumentMembers, updateMemberPermission, removeMember } from '@/api/document'
 import { getFriendList } from '@/api/friend'
 
 const route = useRoute()
 const router = useRouter()
 const documentStore = useDocumentStore()
 const userStore = useUserStore()
+
+// 判断当前用户是否是文档创建者
+const isDocumentCreator = computed(() => {
+  const doc = documentStore.currentDocument
+  const currentUserId = userStore.userInfo?.userId || userStore.userInfo?.id
+  return doc && currentUserId && String(doc.creatorId) === String(currentUserId)
+})
 
 const editorRef = ref(null)
 const connectionStatus = ref('disconnected')
@@ -186,6 +274,10 @@ const shareLinkForm = reactive({
 })
 const generatedLink = ref('')
 const generatingLink = ref(false)
+
+// 文档管理相关
+const showManageDialog = ref(false)
+const documentMembers = ref([])
 
 let quill = null
 let ws = null
@@ -383,7 +475,8 @@ function handleWebSocketMessage(message) {
     case 'JOINED':
       // 加入成功，保存siteId
       siteId = message.siteId
-      onlineUsers.value = message.onlineUsers || []
+      // 使用扩展运算符创建新数组，确保 Vue 检测到变化
+      onlineUsers.value = [...(message.onlineUsers || [])]
       
       // 如果服务端有内容，同步到编辑器
       if (message.content && quill) {
@@ -402,13 +495,13 @@ function handleWebSocketMessage(message) {
       
     case 'USER_JOINED':
       // 其他用户加入
-      onlineUsers.value = message.onlineUsers || []
+      onlineUsers.value = [...(message.onlineUsers || [])]
       ElMessage.info(`${message.username} 加入了文档`)
       break
       
     case 'USER_LEFT':
       // 其他用户离开
-      onlineUsers.value = message.onlineUsers || []
+      onlineUsers.value = [...(message.onlineUsers || [])]
       ElMessage.info(`${message.username} 离开了文档`)
       break
       
@@ -481,6 +574,14 @@ function goBack() {
   router.push('/')
 }
 
+// 跳转到用户主页
+function goToUserProfile(userId) {
+  console.log('Document goToUserProfile called with userId:', userId)
+  if (userId) {
+    router.push(`/user/${userId}`)
+  }
+}
+
 // 获取好友列表
 async function fetchFriends() {
   try {
@@ -527,9 +628,12 @@ async function inviteUser() {
 async function generateShareLink() {
   generatingLink.value = true
   try {
+    // 非创建者只能生成只读链接
+    const permissionType = isDocumentCreator.value ? shareLinkForm.permissionType : 1
+    
     const res = await createShareLink({
       documentId: documentId,
-      permissionType: shareLinkForm.permissionType,
+      permissionType: permissionType,
       validDays: shareLinkForm.validDays,
       maxUses: shareLinkForm.maxUses
     })
@@ -562,6 +666,60 @@ watch(showInviteDialog, (newVal) => {
     generatedLink.value = ''
   }
 })
+
+// 打开文档管理对话框
+async function openManageDialog() {
+  showManageDialog.value = true
+  await fetchDocumentMembers()
+}
+
+// 获取文档成员列表
+async function fetchDocumentMembers() {
+  try {
+    const res = await getDocumentMembers(documentId)
+    if (res.code === 200) {
+      documentMembers.value = res.data || []
+    }
+  } catch (e) {
+    console.error('获取文档成员失败:', e)
+    ElMessage.error('获取文档成员失败')
+  }
+}
+
+// 修改成员权限
+async function handlePermissionChange(member) {
+  try {
+    const res = await updateMemberPermission(documentId, member.userId, member.permissionType)
+    if (res.code === 200) {
+      ElMessage.success('权限修改成功')
+    }
+  } catch (e) {
+    ElMessage.error('权限修改失败')
+    // 回滚
+    await fetchDocumentMembers()
+  }
+}
+
+// 移除文档成员
+async function handleRemoveMember(member) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要移除成员 "${member.nickname || member.username}" 吗？`,
+      '确认移除',
+      { type: 'warning' }
+    )
+    
+    const res = await removeMember(documentId, member.userId)
+    if (res.code === 200) {
+      ElMessage.success('成员已移除')
+      await fetchDocumentMembers()
+    }
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error('移除成员失败')
+    }
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -606,6 +764,27 @@ watch(showInviteDialog, (newVal) => {
       .label {
         color: #909399;
         font-size: 14px;
+      }
+      
+      .avatar-list {
+        display: flex;
+        align-items: center;
+        gap: -8px;
+        
+        .avatar-wrapper {
+          cursor: pointer;
+          
+          &:hover .clickable-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          }
+        }
+      }
+      
+      .clickable-avatar {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 2px solid #fff;
       }
     }
   }
@@ -715,5 +894,45 @@ watch(showInviteDialog, (newVal) => {
 .dialog-footer {
   margin-top: 20px;
   text-align: right;
+}
+
+// 文档管理对话框样式
+.manage-dialog-content {
+  .member-list {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    
+    .member-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #ebeef5;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .member-info {
+        flex: 1;
+        margin-left: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        .username {
+          font-weight: 500;
+          color: #303133;
+        }
+      }
+      
+      .member-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
 }
 </style>

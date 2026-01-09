@@ -48,3 +48,18 @@ export function disableShareLink(linkId) {
 export function getShareLinkInfo(token) {
   return request.get(`/share/info/${token}`)
 }
+
+// 文档成员管理
+export function getDocumentMembers(documentId) {
+  return request.get(`/document/${documentId}/members`)
+}
+
+export function updateMemberPermission(documentId, targetUserId, permissionType) {
+  return request.put(`/document/${documentId}/members/${targetUserId}`, null, {
+    params: { permissionType }
+  })
+}
+
+export function removeMember(documentId, targetUserId) {
+  return request.delete(`/document/${documentId}/members/${targetUserId}`)
+}

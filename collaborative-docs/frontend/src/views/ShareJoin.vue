@@ -39,6 +39,20 @@
         <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
       </div>
     </el-card>
+    
+    <!-- 登录提示弹窗 -->
+    <el-dialog v-model="showLoginDialog" title="需要登录" width="400px" center>
+      <div class="login-prompt">
+        <el-icon :size="48" color="#409eff"><UserFilled /></el-icon>
+        <p>加入文档协作需要登录账号</p>
+        <p class="sub-text">登录后将自动加入此文档</p>
+      </div>
+      <template #footer>
+        <el-button @click="showLoginDialog = false">取消</el-button>
+        <el-button type="primary" @click="goToLogin">去登录</el-button>
+        <el-button type="success" @click="goToRegister">注册账号</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -47,14 +61,17 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getShareLinkInfo, joinByShareLink } from '@/api/document'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(true)
 const joining = ref(false)
 const linkInfo = ref(null)
 const error = ref('')
+const showLoginDialog = ref(false)
 
 onMounted(async () => {
   const token = route.params.token
@@ -85,6 +102,12 @@ onMounted(async () => {
 })
 
 async function handleJoin() {
+  // 检查是否已登录
+  if (!userStore.isLoggedIn) {
+    showLoginDialog.value = true
+    return
+  }
+  
   joining.value = true
   try {
     const res = await joinByShareLink(route.params.token)
@@ -99,6 +122,15 @@ async function handleJoin() {
   }
 }
 
+function goToLogin() {
+  // 保存当前分享链接，登录后跳回
+  router.push({ name: 'Login', query: { redirect: route.fullPath } })
+}
+
+function goToRegister() {
+  router.push({ name: 'Register', query: { redirect: route.fullPath } })
+}
+
 function formatTime(time) {
   if (!time) return ''
   return new Date(time).toLocaleString('zh-CN')
@@ -110,7 +142,9 @@ function formatTime(time) {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
 }
 
 .share-card {
@@ -171,6 +205,22 @@ function formatTime(time) {
       color: #909399;
       margin-bottom: 24px;
     }
+  }
+}
+
+.login-prompt {
+  text-align: center;
+  padding: 20px 0;
+  
+  p {
+    margin: 16px 0 8px;
+    font-size: 16px;
+    color: #303133;
+  }
+  
+  .sub-text {
+    color: #909399;
+    font-size: 14px;
   }
 }
 </style>

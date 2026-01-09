@@ -2,6 +2,7 @@ package com.collab.document.controller;
 
 import com.collab.common.dto.CreateDocumentRequest;
 import com.collab.common.dto.DocumentDTO;
+import com.collab.common.dto.DocumentMemberDTO;
 import com.collab.common.result.Result;
 import com.collab.document.service.DocumentService;
 import jakarta.validation.Valid;
@@ -91,5 +92,38 @@ public class DocumentController {
                                            @RequestParam(defaultValue = "1") Integer requiredPermission) {
         boolean hasPermission = documentService.hasPermission(documentId, userId, requiredPermission);
         return Result.success(hasPermission);
+    }
+    
+    /**
+     * 获取文档成员列表
+     */
+    @GetMapping("/{documentId}/members")
+    public Result<List<DocumentMemberDTO>> getDocumentMembers(@PathVariable("documentId") Long documentId,
+                                                              @RequestHeader("X-User-Id") Long userId) {
+        List<DocumentMemberDTO> members = documentService.getDocumentMembers(documentId, userId);
+        return Result.success(members);
+    }
+    
+    /**
+     * 修改成员权限
+     */
+    @PutMapping("/{documentId}/members/{targetUserId}")
+    public Result<Void> updateMemberPermission(@PathVariable("documentId") Long documentId,
+                                               @PathVariable("targetUserId") Long targetUserId,
+                                               @RequestParam("permissionType") Integer permissionType,
+                                               @RequestHeader("X-User-Id") Long userId) {
+        documentService.updateMemberPermission(documentId, targetUserId, permissionType, userId);
+        return Result.success("权限修改成功", null);
+    }
+    
+    /**
+     * 移除文档成员
+     */
+    @DeleteMapping("/{documentId}/members/{targetUserId}")
+    public Result<Void> removeMember(@PathVariable("documentId") Long documentId,
+                                     @PathVariable("targetUserId") Long targetUserId,
+                                     @RequestHeader("X-User-Id") Long userId) {
+        documentService.removeMember(documentId, targetUserId, userId);
+        return Result.success("成员移除成功", null);
     }
 }

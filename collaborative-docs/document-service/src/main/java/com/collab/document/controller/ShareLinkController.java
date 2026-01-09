@@ -4,6 +4,7 @@ import com.collab.common.dto.CreateShareLinkRequest;
 import com.collab.common.dto.ShareLinkDTO;
 import com.collab.common.result.Result;
 import com.collab.document.service.ShareLinkService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,7 +64,12 @@ public class ShareLinkController {
      * 根据token获取链接信息（公开接口，用于预览）
      */
     @GetMapping("/info/{token}")
-    public Result<ShareLinkDTO> getShareLinkInfo(@PathVariable String token) {
+    public Result<ShareLinkDTO> getShareLinkInfo(@PathVariable String token, HttpServletResponse response) {
+        // 禁用缓存
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+        
         ShareLinkDTO link = shareLinkService.getShareLinkByToken(token);
         if (link == null) {
             return Result.error("分享链接不存在");

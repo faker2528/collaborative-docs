@@ -4,7 +4,11 @@ import router from '@/router'
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000
+  timeout: 10000,
+  headers: {
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+  }
 })
 
 // 请求拦截器
@@ -13,6 +17,13 @@ request.interceptors.request.use(
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // 对GET请求添加时间戳防止缓存
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now()
+      }
     }
     return config
   },

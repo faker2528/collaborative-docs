@@ -39,13 +39,28 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         // 解析documentId
         Long documentId = Long.parseLong(request.getDocumentId());
         
-        // 验证文档存在且用户有权限
+        // 验证文档存在
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
             throw new BusinessException("文档不存在");
         }
-        if (!document.getCreatorId().equals(userId)) {
-            throw new BusinessException("只有文档创建者可以生成分享链接");
+        
+        // 检查用户是否有权限访问该文档
+        boolean isCreator = document.getCreatorId().equals(userId);
+        if (!isCreator) {
+            LambdaQueryWrapper<DocumentPermission> permWrapper = new LambdaQueryWrapper<>();
+            permWrapper.eq(DocumentPermission::getDocumentId, documentId)
+                       .eq(DocumentPermission::getUserId, userId);
+            if (permissionMapper.selectCount(permWrapper) == 0) {
+                throw new BusinessException("无权操作此文档");
+            }
+        }
+        
+        // 非创建者只能生成只读链接
+        int permissionType = request.getPermissionType() != null ? request.getPermissionType() : 1;
+        if (!isCreator) {
+            permissionType = 1; // 强制只读
+            log.info("Non-creator {} generating share link, forcing read-only permission", userId);
         }
         
         // 生成唯一token
@@ -56,7 +71,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         shareLink.setDocumentId(documentId);
         shareLink.setCreatorId(userId);
         shareLink.setToken(token);
-        shareLink.setPermissionType(request.getPermissionType() != null ? request.getPermissionType() : 1);
+        shareLink.setPermissionType(permissionType);
         
         // 设置过期时间
         if (request.getValidDays() != null && request.getValidDays() > 0) {
@@ -69,7 +84,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         
         shareLinkMapper.insert(shareLink);
         
-        log.info("Created share link for document {} by user {}", documentId, userId);
+        log.info("Created share link for document {} by user {}, permission: {}", documentId, userId, permissionType);
         
         return convertToDTO(shareLink, document.getTitle());
     }

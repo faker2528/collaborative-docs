@@ -25,6 +25,11 @@ export function getPendingRequestCount() {
   return request.get('/friend/requests/pending/count')
 }
 
+// 获取待处理的好友请求列表（收到的未处理请求）
+export function getPendingRequests() {
+  return request.get('/friend/requests/received')
+}
+
 // 同意好友请求
 export function acceptFriendRequest(requestId) {
   return request.post(`/friend/request/${requestId}/accept`)

@@ -18,7 +18,7 @@ const routes = [
     path: '/share/:token',
     name: 'ShareJoin',
     component: () => import('@/views/ShareJoin.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false, publicPage: true }  // 允许未登录用户预览
   },
   {
     path: '/',
@@ -55,6 +55,11 @@ const routes = [
         path: 'friends',
         name: 'Friends',
         component: () => import('@/views/Friends.vue')
+      },
+      {
+        path: 'user/:id',
+        name: 'UserProfile',
+        component: () => import('@/views/UserProfile.vue')
       }
     ]
   }
