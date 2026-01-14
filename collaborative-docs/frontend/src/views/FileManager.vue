@@ -58,8 +58,18 @@
             {{ formatTime(row.createTime) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button 
+              v-if="canPreview(row.fileType)" 
+              type="success" 
+              size="small" 
+              text 
+              @click="handlePreview(row)"
+            >
+              <el-icon><View /></el-icon>
+              预览
+            </el-button>
             <el-button type="primary" size="small" text @click="handleDownload(row)">
               <el-icon><Download /></el-icon>
               下载
@@ -91,13 +101,60 @@
         <el-progress :percentage="uploadProgress" />
       </div>
     </el-dialog>
+    
+    <!-- 文件预览对话框 -->
+    <el-dialog 
+      v-model="previewDialogVisible" 
+      :title="previewFileName"
+      width="80%"
+      top="5vh"
+      destroy-on-close
+    >
+      <div class="preview-container">
+        <!-- 图片预览 -->
+        <img 
+          v-if="previewType === 'image'" 
+          :src="previewUrl" 
+          class="preview-image"
+          alt="预览图片"
+        />
+        <!-- PDF预览 -->
+        <iframe 
+          v-else-if="previewType === 'pdf'" 
+          :src="previewUrl" 
+          class="preview-pdf"
+        />
+        <!-- 视频预览 -->
+        <video 
+          v-else-if="previewType === 'video'" 
+          :src="previewUrl" 
+          controls 
+          class="preview-video"
+        />
+        <!-- 音频预览 -->
+        <audio 
+          v-else-if="previewType === 'audio'" 
+          :src="previewUrl" 
+          controls 
+          class="preview-audio"
+        />
+        <!-- 不支持预览 -->
+        <div v-else class="preview-unsupported">
+          <el-icon :size="64"><Document /></el-icon>
+          <p>该文件类型不支持在线预览</p>
+          <el-button type="primary" @click="handleDownload(previewFile)">
+            下载文件
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUserFiles, deleteFile, getDownloadUrl } from '@/api/file'
+import { getUserFiles, deleteFile, getDownloadUrl, getPreviewUrl } from '@/api/file'
 import request from '@/api/request'
 
 const files = ref([])
@@ -110,6 +167,13 @@ const filterType = ref('')
 const uploadDialogVisible = ref(false)
 const uploadFileName = ref('')
 const uploadProgress = ref(0)
+
+// 预览相关
+const previewDialogVisible = ref(false)
+const previewFileName = ref('')
+const previewUrl = ref('')
+const previewType = ref('')
+const previewFile = ref(null)
 
 onMounted(() => {
   fetchFiles()
@@ -180,6 +244,34 @@ function handleDownload(file) {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+// 判断文件是否可预览
+function canPreview(mimeType) {
+  if (!mimeType) return false
+  return mimeType.startsWith('image/') || 
+         mimeType === 'application/pdf' ||
+         mimeType.startsWith('video/') ||
+         mimeType.startsWith('audio/')
+}
+
+// 获取预览类型
+function getPreviewType(mimeType) {
+  if (!mimeType) return 'unsupported'
+  if (mimeType.startsWith('image/')) return 'image'
+  if (mimeType === 'application/pdf') return 'pdf'
+  if (mimeType.startsWith('video/')) return 'video'
+  if (mimeType.startsWith('audio/')) return 'audio'
+  return 'unsupported'
+}
+
+// 预览文件
+function handlePreview(file) {
+  previewFile.value = file
+  previewFileName.value = file.originalName
+  previewUrl.value = getPreviewUrl(file.id)
+  previewType.value = getPreviewType(file.fileType)
+  previewDialogVisible.value = true
 }
 
 async function handleDelete(file) {
@@ -278,6 +370,43 @@ function formatTime(time) {
   p {
     margin-bottom: 16px;
     color: #606266;
+  }
+}
+
+.preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  
+  .preview-image {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+  }
+  
+  .preview-pdf {
+    width: 100%;
+    height: 70vh;
+    border: none;
+  }
+  
+  .preview-video {
+    max-width: 100%;
+    max-height: 70vh;
+  }
+  
+  .preview-audio {
+    width: 100%;
+  }
+  
+  .preview-unsupported {
+    text-align: center;
+    color: #909399;
+    
+    p {
+      margin: 16px 0;
+    }
   }
 }
 </style>

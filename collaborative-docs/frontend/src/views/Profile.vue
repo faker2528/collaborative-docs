@@ -206,8 +206,8 @@ async function handleAvatarUpload({ file }) {
     })
     
     if (res.code === 200) {
-      // 获取文件访问URL
-      const fileUrl = `/api/file/download/${res.data.id}`
+      // 获取文件预览URL（使用preview而不是download，以便在img标签中显示）
+      const fileUrl = `/api/file/preview/${res.data.id}`
       profileForm.avatar = fileUrl
       avatarPreview.value = fileUrl
       ElMessage.success('头像上传成功')

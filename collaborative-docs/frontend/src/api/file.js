@@ -39,3 +39,8 @@ export function getUserFiles(businessType = '', page = 1, size = 20) {
 export function getDownloadUrl(fileId) {
   return `/api/file/download/${fileId}`
 }
+
+// 获取文件预览链接（用于图片、PDF等直接在浏览器中显示）
+export function getPreviewUrl(fileId) {
+  return `/api/file/preview/${fileId}`
+}

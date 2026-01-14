@@ -59,6 +59,28 @@ public class FileController {
     }
     
     /**
+     * 预览文件（图片、PDF等可直接在浏览器中显示）
+     */
+    @GetMapping("/preview/{fileId}")
+    public ResponseEntity<InputStreamResource> preview(
+            @PathVariable(value = "fileId") Long fileId,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        FileRecordDTO fileInfo = fileService.getFileInfo(fileId);
+        InputStream inputStream = fileService.download(fileId, userId);
+        
+        String encodedFileName = URLEncoder.encode(fileInfo.getOriginalName(), StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        
+        // 使用 inline 模式，浏览器会尝试直接显示文件
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + encodedFileName)
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400")
+                .contentType(MediaType.parseMediaType(fileInfo.getFileType()))
+                .contentLength(fileInfo.getFileSize())
+                .body(new InputStreamResource(inputStream));
+    }
+    
+    /**
      * 获取文件信息
      */
     @GetMapping("/{fileId}")
