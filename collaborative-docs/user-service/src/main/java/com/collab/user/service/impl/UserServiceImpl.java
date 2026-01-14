@@ -168,6 +168,9 @@ public class UserServiceImpl implements UserService {
         if (request.getAvatar() != null) {
             user.setAvatar(request.getAvatar());
         }
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
         
         userMapper.updateById(user);
         log.info("User {} updated profile", userId);
@@ -185,7 +188,9 @@ public class UserServiceImpl implements UserService {
         dto.setEmail(user.getEmail());
         dto.setNickname(user.getNickname());
         dto.setAvatar(user.getAvatar());
+        dto.setBio(user.getBio());
         dto.setStatus(user.getStatus());
+        dto.setCreateTime(user.getCreateTime());
         return dto;
     }
 }

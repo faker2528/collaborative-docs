@@ -42,6 +42,11 @@ public class User implements Serializable {
     private String avatar;
     
     /**
+     * 个人简介
+     */
+    private String bio;
+    
+    /**
      * 状态: 0-禁用, 1-启用
      */
     private Integer status;

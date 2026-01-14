@@ -18,6 +18,8 @@
         <module>document-service</module>
         <module>collaboration-service</module>
         <module>history-service</module>
+        <module>message-service</module>
+        <module>file-service</module>
     </modules>
 
     <properties>

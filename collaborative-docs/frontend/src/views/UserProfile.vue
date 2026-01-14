@@ -26,9 +26,15 @@
       
       <!-- 操作按钮 -->
       <div class="profile-actions" v-if="!isCurrentUser">
+        <!-- 发私信按钮 -->
+        <el-button type="primary" @click="handleSendMessage">
+          <el-icon><ChatDotRound /></el-icon>
+          发私信
+        </el-button>
+        
         <el-button 
           v-if="friendStatus === 'none'"
-          type="primary" 
+          type="success" 
           @click="handleAddFriend"
           :loading="actionLoading"
         >
@@ -59,13 +65,15 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getUserById } from '@/api/user'
 import { sendFriendRequest, getFriendList, getPendingRequests } from '@/api/friend'
+import { getOrCreateConversation } from '@/api/message'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(true)
@@ -144,7 +152,7 @@ async function checkFriendStatus() {
 async function handleAddFriend() {
   actionLoading.value = true
   try {
-    const res = await sendFriendRequest({ receiverId: userInfo.value.id })
+    const res = await sendFriendRequest(userInfo.value.id)
     if (res.code === 200) {
       ElMessage.success('好友请求已发送')
       friendStatus.value = 'pending'
@@ -153,6 +161,19 @@ async function handleAddFriend() {
     ElMessage.error('发送请求失败')
   } finally {
     actionLoading.value = false
+  }
+}
+
+async function handleSendMessage() {
+  try {
+    // 获取或创建与该用户的会话
+    const res = await getOrCreateConversation(userInfo.value.id)
+    if (res.code === 200) {
+      // 跳转到消息中心
+      router.push('/messages')
+    }
+  } catch (e) {
+    ElMessage.error('创建会话失败')
   }
 }
 

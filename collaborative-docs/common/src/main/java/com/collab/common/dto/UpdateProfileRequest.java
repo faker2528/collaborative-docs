@@ -10,4 +10,5 @@ public class UpdateProfileRequest {
     private String nickname;
     private String email;
     private String avatar;
+    private String bio;
 }

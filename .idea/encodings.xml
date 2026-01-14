@@ -7,10 +7,14 @@
     <file url="file://$PROJECT_DIR$/collaborative-docs/common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/document-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/document-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/collaborative-docs/file-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/collaborative-docs/file-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/gateway-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/gateway-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/history-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/history-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/collaborative-docs/message-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/collaborative-docs/message-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/collaborative-docs/user-service/src/main/java" charset="UTF-8" />

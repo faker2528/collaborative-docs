@@ -60,6 +60,16 @@ const routes = [
         path: 'user/:id',
         name: 'UserProfile',
         component: () => import('@/views/UserProfile.vue')
+      },
+      {
+        path: 'messages',
+        name: 'MessageCenter',
+        component: () => import('@/views/MessageCenter.vue')
+      },
+      {
+        path: 'files',
+        name: 'FileManager',
+        component: () => import('@/views/FileManager.vue')
       }
     ]
   }

@@ -67,17 +67,39 @@ spring:
           filters:
             - StripPrefix=1
 
+        # 消息服务WebSocket路由 (必须在协作服务之前，更精确的路径优先匹配)
+        - id: message-ws
+          uri: lb:ws://message-service
+          predicates:
+            - Path=/ws/message,/ws/message/**
+
         # 协作服务WebSocket路由
         - id: collaboration-ws
           uri: lb:ws://collaboration-service
           predicates:
-            - Path=/ws/**
+            - Path=/ws/collaboration/**
 
         # 历史服务路由
         - id: history-service
           uri: lb://history-service
           predicates:
             - Path=/api/history/**
+          filters:
+            - StripPrefix=1
+
+        # 消息服务路由
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/message/**
+          filters:
+            - StripPrefix=1
+
+        # 文件服务路由
+        - id: file-service
+          uri: lb://file-service
+          predicates:
+            - Path=/api/file/**
           filters:
             - StripPrefix=1
 

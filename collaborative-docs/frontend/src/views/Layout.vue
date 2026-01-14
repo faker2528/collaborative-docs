@@ -50,6 +50,17 @@
               <el-badge v-if="pendingCount > 0" :value="pendingCount" class="badge" />
             </template>
           </el-menu-item>
+          <el-menu-item index="/messages">
+            <el-icon><ChatDotRound /></el-icon>
+            <template #title>
+              <span>消息中心</span>
+              <el-badge v-if="unreadMessageCount > 0" :value="unreadMessageCount" class="badge" />
+            </template>
+          </el-menu-item>
+          <el-menu-item index="/files">
+            <el-icon><FolderOpened /></el-icon>
+            <template #title>文件管理</template>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
       
@@ -71,6 +82,15 @@
         </div>
         
         <div class="header-right">
+          <!-- 消息图标 -->
+          <el-badge :value="unreadMessageCount" :hidden="unreadMessageCount === 0" class="message-badge">
+            <el-tooltip content="消息中心" placement="bottom">
+              <el-button circle @click="goToMessages">
+                <el-icon :size="20"><ChatDotRound /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </el-badge>
+          
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" :src="userStore.userInfo?.avatar">
@@ -103,11 +123,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { getPendingRequestCount } from '@/api/friend'
+import { getUnreadCount } from '@/api/message'
+import { messageWs } from '@/utils/messageWebSocket'
+import { eventBus, Events } from '@/utils/eventBus'
 
 const router = useRouter()
 const route = useRoute()
@@ -115,6 +138,7 @@ const userStore = useUserStore()
 
 const isCollapse = ref(false)
 const pendingCount = ref(0)
+const unreadMessageCount = ref(0)
 
 const activeMenu = computed(() => {
   return route.path
@@ -126,7 +150,8 @@ const currentRoute = computed(() => {
     '/documents': '我的文档',
     '/documents/shared': '共享给我',
     '/profile': '个人资料',
-    '/friends': '我的好友'
+    '/friends': '我的好友',
+    '/messages': '消息中心'
   }
   
   if (route.path.startsWith('/document/')) {
@@ -138,7 +163,45 @@ const currentRoute = computed(() => {
 
 onMounted(async () => {
   await fetchPendingCount()
+  await fetchUnreadMessageCount()
+  
+  // 连接消息WebSocket
+  const userId = userStore.userInfo?.userId || userStore.userInfo?.id
+  if (userId) {
+    messageWs.connect(userId)
+  }
+  
+  // 监听未读数变化事件
+  eventBus.on(Events.UNREAD_COUNT_CHANGED, handleUnreadCountChanged)
+  eventBus.on(Events.FRIEND_REQUEST_CHANGED, handleFriendRequestChanged)
 })
+
+onUnmounted(() => {
+  messageWs.disconnect()
+  eventBus.off(Events.UNREAD_COUNT_CHANGED, handleUnreadCountChanged)
+  eventBus.off(Events.FRIEND_REQUEST_CHANGED, handleFriendRequestChanged)
+})
+
+function handleUnreadCountChanged() {
+  // 重新获取未读数
+  fetchUnreadMessageCount()
+}
+
+function handleFriendRequestChanged() {
+  // 重新获取好友请求数
+  fetchPendingCount()
+}
+
+async function fetchUnreadMessageCount() {
+  try {
+    const res = await getUnreadCount()
+    if (res.code === 200) {
+      unreadMessageCount.value = res.data.count || 0
+    }
+  } catch (e) {
+    console.error('获取未读消息数失败')
+  }
+}
 
 async function fetchPendingCount() {
   try {
@@ -168,6 +231,10 @@ async function handleCommand(command) {
   } else if (command === 'profile') {
     router.push('/profile')
   }
+}
+
+function goToMessages() {
+  router.push('/messages')
 }
 </script>
 
@@ -270,6 +337,16 @@ async function handleCommand(command) {
   height: 60px;
   
   .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    .message-badge {
+      :deep(.el-badge__content) {
+        transform: translateY(-50%) translateX(50%);
+      }
+    }
+    
     .user-info {
       display: flex;
       align-items: center;
