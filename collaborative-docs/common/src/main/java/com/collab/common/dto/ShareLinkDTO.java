@@ -20,4 +20,8 @@ public class ShareLinkDTO {
     private Integer usedCount;
     private Integer status;
     private LocalDateTime createTime;
+    
+    // 新增验证相关字段
+    private Integer verificationType;
+    private String email;
 }

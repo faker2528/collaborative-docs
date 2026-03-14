@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         log.info("【User logged in successfully】: {}", user.getUsername());
 
         return LoginResponse.builder()
-                .userId(user.getId())
+                .userId(String.valueOf(user.getId()))  // 转为 String，防止前端精度丢失
                 .username(user.getUsername())
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())

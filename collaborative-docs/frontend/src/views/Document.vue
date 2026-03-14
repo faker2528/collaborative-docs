@@ -149,6 +149,31 @@
                   <el-option :value="10" label="10次" />
                 </el-select>
               </el-form-item>
+              
+              <el-form-item label="验证类型">
+                <el-select v-model="shareLinkForm.verificationType" style="width: 100%;">
+                  <el-option :value="0" label="免验证" />
+                  <el-option :value="1" label="密码验证" />
+                  <el-option :value="2" label="指定邮箱验证" />
+                </el-select>
+              </el-form-item>
+              
+              <el-form-item label="访问密码" v-if="shareLinkForm.verificationType === 1">
+                <el-input 
+                  v-model="shareLinkForm.password" 
+                  type="password"
+                  placeholder="请输入访问密码"
+                  show-password
+                />
+              </el-form-item>
+              
+              <el-form-item label="指定邮箱" v-if="shareLinkForm.verificationType === 2">
+                <el-input 
+                  v-model="shareLinkForm.email" 
+                  type="email"
+                  placeholder="请输入指定邮箱地址"
+                />
+              </el-form-item>
             </el-form>
             
             <!-- 生成的链接 -->
@@ -270,7 +295,10 @@ const inviteForm = reactive({
 const shareLinkForm = reactive({
   permissionType: 2,
   validDays: 7,
-  maxUses: 0
+  maxUses: 0,
+  verificationType: 0,  // 默认免验证
+  password: '',
+  email: ''
 })
 const generatedLink = ref('')
 const generatingLink = ref(false)
@@ -635,7 +663,10 @@ async function generateShareLink() {
       documentId: documentId,
       permissionType: permissionType,
       validDays: shareLinkForm.validDays,
-      maxUses: shareLinkForm.maxUses
+      maxUses: shareLinkForm.maxUses,
+      verificationType: shareLinkForm.verificationType,
+      password: shareLinkForm.password,
+      email: shareLinkForm.email
     })
     if (res.code === 200) {
       const baseUrl = window.location.origin

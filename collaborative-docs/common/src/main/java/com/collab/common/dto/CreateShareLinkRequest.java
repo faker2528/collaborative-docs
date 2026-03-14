@@ -26,4 +26,19 @@ public class CreateShareLinkRequest {
      * 最大使用次数(0表示无限制)
      */
     private Integer maxUses;
+    
+    /**
+     * 验证类型: 0-免验证, 1-密码验证, 2-邮箱验证
+     */
+    private Integer verificationType;
+    
+    /**
+     * 访问密码（当verificationType为1时使用）
+     */
+    private String password;
+    
+    /**
+     * 指定邮箱（当verificationType为2时使用）
+     */
+    private String email;
 }

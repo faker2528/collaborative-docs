@@ -56,6 +56,21 @@ public class ShareLink implements Serializable {
      */
     private Integer status;
     
+    /**
+     * 验证类型: 0-免验证, 1-密码验证, 2-邮箱验证
+     */
+    private Integer verificationType;
+    
+    /**
+     * 访问密码（加密存储）
+     */
+    private String password;
+    
+    /**
+     * 指定邮箱（当verificationType为2时使用）
+     */
+    private String email;
+    
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     

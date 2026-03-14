@@ -36,9 +36,14 @@ public class RedisConstant {
     public static final String COLLABORATION_ROOM_USERS_PREFIX = "collab:room:users:";
     
     /**
-     * CRDT文档状态前缀
+     * CRDT 文档状态前缀
      */
     public static final String CRDT_DOC_PREFIX = "collab:crdt:";
+        
+    /**
+     * 分享链接验证标记前缀
+     */
+    public static final String SHARE_LINK_VERIFIED_PREFIX = "share_link:verified:";
     
     /**
      * Token过期时间（秒）- 24小时

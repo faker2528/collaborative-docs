@@ -104,11 +104,15 @@ CREATE TABLE IF NOT EXISTS t_share_link (
     max_uses INT DEFAULT 0 COMMENT '最大使用次数(0表示无限制)',
     used_count INT DEFAULT 0 COMMENT '已使用次数',
     status TINYINT DEFAULT 1 COMMENT '状态: 0-已禁用, 1-正常',
+    verification_type TINYINT DEFAULT 0 COMMENT '验证类型: 0-免验证, 1-密码验证, 2-邮箱验证',
+    password VARCHAR(255) COMMENT '访问密码（加密存储）',
+    email VARCHAR(100) COMMENT '指定邮箱（当verificationType为2时使用）',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_document_id (document_id),
     INDEX idx_token (token),
-    INDEX idx_creator_id (creator_id)
+    INDEX idx_creator_id (creator_id),
+    INDEX idx_verification_type (verification_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文档分享链接表';
 
 -- 会话表

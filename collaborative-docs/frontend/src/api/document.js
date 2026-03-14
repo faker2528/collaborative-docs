@@ -49,6 +49,16 @@ export function getShareLinkInfo(token) {
   return request.get(`/share/info/${token}`)
 }
 
+// 获取文档预览信息（用于未登录用户预览）
+export function getDocumentPreview(token) {
+  return request.get(`/share/preview/${token}`)
+}
+
+// 验证分享链接密码
+export function verifyShareLinkPassword(token, password) {
+  return request.post(`/share/verify-password/${token}`, { password })
+}
+
 // 文档成员管理
 export function getDocumentMembers(documentId) {
   return request.get(`/document/${documentId}/members`)

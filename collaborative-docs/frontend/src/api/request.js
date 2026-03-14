@@ -15,10 +15,26 @@ const request = axios.create({
 request.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
+    const userInfo = localStorage.getItem('userInfo')
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    // 对GET请求添加时间戳防止缓存
+    
+    // 添加用户 ID 到请求头（如果已登录）
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo)
+        // 注意：用户信息中的字段名是 userId
+        if (user && user.userId) {
+          config.headers['X-User-Id'] = user.userId.toString()
+        }
+      } catch (e) {
+        console.error('解析用户信息失败:', e)
+      }
+    }
+    
+    // 对 GET 请求添加时间戳防止缓存
     if (config.method === 'get') {
       config.params = {
         ...config.params,
