@@ -16,17 +16,17 @@ public class CommentLike {
      * ID
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
     
     /**
      * 评论 ID
      */
-    private Long commentId;
+    private String commentId;
     
     /**
      * 用户 ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 创建时间

@@ -32,9 +32,9 @@ public class FileController {
     @PostMapping("/upload")
     public Result<FileRecordDTO> upload(
             @RequestParam(value = "file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestParam(value = "businessType", required = false) String businessType,
-            @RequestParam(value = "businessId", required = false) Long businessId) {
+            @RequestParam(value = "businessId", required = false) String businessId) {
         FileRecordDTO record = fileService.upload(file, userId, businessType, businessId);
         return Result.success("上传成功", record);
     }
@@ -44,8 +44,8 @@ public class FileController {
      */
     @GetMapping("/download/{fileId}")
     public ResponseEntity<InputStreamResource> download(
-            @PathVariable(value = "fileId") Long fileId,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @PathVariable(value = "fileId") String fileId,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
         FileRecordDTO fileInfo = fileService.getFileInfo(fileId);
         InputStream inputStream = fileService.download(fileId, userId);
         
@@ -63,8 +63,8 @@ public class FileController {
      */
     @GetMapping("/preview/{fileId}")
     public ResponseEntity<InputStreamResource> preview(
-            @PathVariable(value = "fileId") Long fileId,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @PathVariable(value = "fileId") String fileId,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
         FileRecordDTO fileInfo = fileService.getFileInfo(fileId);
         InputStream inputStream = fileService.download(fileId, userId);
         
@@ -84,7 +84,7 @@ public class FileController {
      * 获取文件信息
      */
     @GetMapping("/{fileId}")
-    public Result<FileRecordDTO> getFileInfo(@PathVariable(value = "fileId") Long fileId) {
+    public Result<FileRecordDTO> getFileInfo(@PathVariable(value = "fileId") String fileId) {
         FileRecordDTO record = fileService.getFileInfo(fileId);
         return Result.success(record);
     }
@@ -94,8 +94,8 @@ public class FileController {
      */
     @DeleteMapping("/{fileId}")
     public Result<Void> delete(
-            @PathVariable(value = "fileId") Long fileId,
-            @RequestHeader(value = "X-User-Id") Long userId) {
+            @PathVariable(value = "fileId") String fileId,
+            @RequestHeader(value = "X-User-Id") String userId) {
         fileService.delete(fileId, userId);
         return Result.success("删除成功", null);
     }
@@ -105,7 +105,7 @@ public class FileController {
      */
     @GetMapping("/list")
     public Result<List<FileRecordDTO>> getUserFiles(
-            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestParam(value = "businessType", required = false) String businessType,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "size", defaultValue = "20") Integer size) {

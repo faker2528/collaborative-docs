@@ -41,7 +41,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
                 }
 
                 // 获取用户信息
-                Long userId = JwtUtil.getUserId(token);
+                String userId = JwtUtil.getUserId(token);
                 String username = JwtUtil.getUsername(token);
 
                 // 存储到attributes中，供后续使用
@@ -53,7 +53,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
                 String[] pathParts = path.split("/");
                 if (pathParts.length > 0) {
                     String documentIdStr = pathParts[pathParts.length - 1];
-                    attributes.put("documentId", Long.parseLong(documentIdStr));
+                    attributes.put("documentId", documentIdStr);
                 }
 
                 log.debug("WebSocket handshake success for user: {}", username);

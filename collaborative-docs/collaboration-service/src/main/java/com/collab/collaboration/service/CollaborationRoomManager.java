@@ -22,12 +22,12 @@ public class CollaborationRoomManager {
     /**
      * 所有协作房间（documentId -> Room）
      */
-    private final Map<Long, CollaborationRoom> rooms = new ConcurrentHashMap<>();
+    private final Map<String, CollaborationRoom> rooms = new ConcurrentHashMap<>();
 
     /**
      * 获取或创建房间
      */
-    public CollaborationRoom getOrCreateRoom(Long documentId) {
+    public CollaborationRoom getOrCreateRoom(String documentId) {
         return rooms.computeIfAbsent(documentId, id -> {
             log.info("【Creating new collaboration room for document】: {}", id);
             return new CollaborationRoom(id);
@@ -37,14 +37,14 @@ public class CollaborationRoomManager {
     /**
      * 获取房间
      */
-    public CollaborationRoom getRoom(Long documentId) {
+    public CollaborationRoom getRoom(String documentId) {
         return rooms.get(documentId);
     }
 
     /**
      * 用户加入房间
      */
-    public void joinRoom(Long documentId, CollaborationUser user) {
+    public void joinRoom(String documentId, CollaborationUser user) {
         CollaborationRoom room = getOrCreateRoom(documentId);
         room.addUser(user);
     }
@@ -52,8 +52,8 @@ public class CollaborationRoomManager {
     /**
      * 用户离开房间
      */
-    public void leaveRoom(Long documentId, String sessionId) {
-        CollaborationRoom room = rooms.get(documentId);
+    public void leaveRoom(String documentId, String sessionId) {
+        CollaborationRoom room = rooms.get(Long.valueOf(documentId));
         if (room != null) {
             room.removeUser(sessionId);
             
@@ -71,7 +71,7 @@ public class CollaborationRoomManager {
      * @param siteId 站点ID
      * @return 生成的 CRDT 操作列表
      */
-    public List<CrdtOperation> applyDelta(Long documentId, String deltaJson, String siteId) {
+    public List<CrdtOperation> applyDelta(String documentId, String deltaJson, String siteId) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
             List<CrdtOperation> ops = room.applyDelta(deltaJson, siteId);
@@ -84,7 +84,7 @@ public class CollaborationRoomManager {
     /**
      * 应用远程 CRDT 操作
      */
-    public void applyRemoteOperation(Long documentId, CrdtOperation operation) {
+    public void applyRemoteOperation(String documentId, CrdtOperation operation) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
             room.applyRemoteOperation(operation);
@@ -94,7 +94,7 @@ public class CollaborationRoomManager {
     /**
      * 获取房间内的所有用户（返回副本，避免并发问题）
      */
-    public Collection<CollaborationUser> getRoomUsers(Long documentId) {
+    public Collection<CollaborationUser> getRoomUsers(String documentId) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
             // 返回副本而不是 live view，避免并发修改问题
@@ -106,7 +106,7 @@ public class CollaborationRoomManager {
     /**
      * 获取文档内容 (Delta JSON)
      */
-    public String getDocumentContent(Long documentId) {
+    public String getDocumentContent(String documentId) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
             return room.getDeltaContent();
@@ -117,7 +117,7 @@ public class CollaborationRoomManager {
     /**
      * 获取文档纯文本
      */
-    public String getDocumentText(Long documentId) {
+    public String getDocumentText(String documentId) {
         CollaborationRoom room = rooms.get(documentId);
         if (room != null) {
             return room.getContent();
@@ -128,7 +128,7 @@ public class CollaborationRoomManager {
     /**
      * 初始化文档内容（只在房间为空时初始化，避免重复加载）
      */
-    public synchronized void initDocumentContent(Long documentId, String content) {
+    public synchronized void initDocumentContent(String documentId, String content) {
         CollaborationRoom room = getOrCreateRoom(documentId);
         
         // 检查房间是否已经初始化过内容（避免重复加载）

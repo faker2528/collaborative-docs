@@ -6,6 +6,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.collab.common.crdt.CrdtDocument;
 import com.collab.common.crdt.CrdtOperation;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class CollaborationRoom {
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * CRDT文档
@@ -51,11 +52,15 @@ public class CollaborationRoom {
     /**
      * 房间创建者ID（用于保存时的权限验证）
      */
-    private Long creatorUserId;
+    private String creatorUserId;
     
     /**
      * 文档是否有未保存的编辑
+     * -- GETTER --
+     *  检查是否有未保存的编辑
+
      */
+    @Getter
     private volatile boolean dirty = false;
     
     /**
@@ -63,7 +68,7 @@ public class CollaborationRoom {
      */
     private volatile boolean contentInitialized = false;
 
-    public CollaborationRoom(Long documentId) {
+    public CollaborationRoom(String documentId) {
         this.documentId = documentId;
         this.crdtDocument = new CrdtDocument(documentId, "server");
         this.users = new ConcurrentHashMap<>();
@@ -243,11 +248,5 @@ public class CollaborationRoom {
     public void clearDirty() {
         this.dirty = false;
     }
-    
-    /**
-     * 检查是否有未保存的编辑
-     */
-    public boolean isDirty() {
-        return this.dirty;
-    }
+
 }

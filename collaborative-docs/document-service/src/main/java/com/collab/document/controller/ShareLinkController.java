@@ -28,7 +28,7 @@ public class ShareLinkController {
      */
     @PostMapping("/link")
     public Result<ShareLinkDTO> createShareLink(@RequestBody CreateShareLinkRequest request,
-                                                 @RequestHeader("X-User-Id") Long userId) {
+                                                 @RequestHeader("X-User-Id") String userId) {
         ShareLinkDTO link = shareLinkService.createShareLink(request, userId);
         return Result.success("分享链接创建成功", link);
     }
@@ -38,7 +38,7 @@ public class ShareLinkController {
      */
     @PostMapping("/join/{token}")
     public Result<Void> joinByShareLink(@PathVariable("token") String token,
-                                        @RequestHeader("X-User-Id") Long userId) {
+                                        @RequestHeader("X-User-Id") String userId) {
         log.info("用户:{}, 通过分享链接加入文档: {}", userId, token);
         shareLinkService.joinByShareLink(token, userId);
         return Result.success("已成功加入文档协作", null);
@@ -49,8 +49,8 @@ public class ShareLinkController {
      */
     @GetMapping("/links/{documentId}")
     public Result<List<ShareLinkDTO>> getShareLinks(@PathVariable("documentId") String documentId,
-                                                    @RequestHeader("X-User-Id") Long userId) {
-        List<ShareLinkDTO> links = shareLinkService.getShareLinks(Long.parseLong(documentId), userId);
+                                                    @RequestHeader("X-User-Id") String userId) {
+        List<ShareLinkDTO> links = shareLinkService.getShareLinks(documentId, userId);
         return Result.success(links);
     }
     
@@ -59,8 +59,8 @@ public class ShareLinkController {
      */
     @DeleteMapping("/link/{linkId}")
     public Result<Void> disableShareLink(@PathVariable("linkId") String linkId,
-                                         @RequestHeader("X-User-Id") Long userId) {
-        shareLinkService.disableShareLink(Long.parseLong(linkId), userId);
+                                         @RequestHeader("X-User-Id") String userId) {
+        shareLinkService.disableShareLink(linkId, userId);
         return Result.success("分享链接已禁用", null);
     }
     

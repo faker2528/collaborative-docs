@@ -16,12 +16,12 @@ public interface CollaborationClient {
      */
     @PostMapping("/broadcast-comment")
     Result<Void> broadcastComment(
-            @RequestParam("documentId") Long documentId,
-            @RequestParam("commentId") Long commentId,
-            @RequestParam("userId") Long userId,
+            @RequestParam("documentId") String documentId,
+            @RequestParam("commentId") String commentId,
+            @RequestParam("userId") String userId,
             @RequestParam("username") String username,
             @RequestParam("text") String text,
-            @RequestParam(value = "parentId", required = false) Long parentId,
+            @RequestParam(value = "parentId", required = false) String parentId,
             @RequestParam("isReply") boolean isReply
     );
 }

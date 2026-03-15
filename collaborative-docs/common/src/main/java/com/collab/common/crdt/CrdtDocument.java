@@ -28,7 +28,7 @@ public class CrdtDocument implements Serializable {
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 站点ID（标识当前客户端）
@@ -73,7 +73,7 @@ public class CrdtDocument implements Serializable {
         this.orderedChars = new ArrayList<>();
     }
 
-    public CrdtDocument(Long documentId, String siteId) {
+    public CrdtDocument(String documentId, String siteId) {
         this();
         this.documentId = documentId;
         this.siteId = siteId;

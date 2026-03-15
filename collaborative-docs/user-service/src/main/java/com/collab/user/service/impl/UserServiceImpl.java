@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void logout(Long userId) {
+    public void logout(String userId) {
         // 从Redis中删除Token
         String redisKey = RedisConstant.TOKEN_PREFIX + userId;
         redisTemplate.delete(redisKey);
@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUserInfo(Long userId) {
+    public UserDTO getUserInfo(String userId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public List<UserDTO> searchUsers(String keyword, Long currentUserId) {
+    public List<UserDTO> searchUsers(String keyword, String currentUserId) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         // 模糊搜索用户名或昵称
         wrapper.and(w -> w
@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserDTO updateProfile(Long userId, UpdateProfileRequest request) {
+    public UserDTO updateProfile(String userId, UpdateProfileRequest request) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
      */
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
-        dto.setId(String.valueOf(user.getId()));
+        dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setNickname(user.getNickname());

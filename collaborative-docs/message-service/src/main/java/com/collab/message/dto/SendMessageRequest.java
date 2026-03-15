@@ -14,7 +14,7 @@ public class SendMessageRequest {
      * 接收者ID
      */
     @NotNull(message = "接收者ID不能为空")
-    private Long receiverId;
+    private String receiverId;
     
     /**
      * 消息类型: 1-文字, 2-图片, 3-文件

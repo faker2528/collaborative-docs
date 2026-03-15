@@ -12,7 +12,7 @@ public interface CommentService {
     /**
      * 获取文档评论列表
      */
-    List<CommentDTO> getComments(Long documentId, Long userId);
+    List<CommentDTO> getComments(String documentId, String userId);
     
     /**
      * 添加评论
@@ -22,15 +22,15 @@ public interface CommentService {
      * @param parentId 父评论ID（顶级评论ID，用于分组）
      * @param replyToId 回复的目标评论ID（用于标识回复的是哪条评论）
      */
-    CommentDTO addComment(Long documentId, Long userId, String text, Long parentId, Long replyToId);
+    CommentDTO addComment(String documentId, String userId, String text, String parentId, String replyToId);
     
     /**
      * 删除评论
      */
-    void deleteComment(Long commentId, Long userId);
+    void deleteComment(String commentId, String userId);
     
     /**
      * 点赞评论
      */
-    void likeComment(Long commentId, Long userId);
+    void likeComment(String commentId, String userId);
 }

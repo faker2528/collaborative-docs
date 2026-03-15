@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class FileRecord {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 原始文件名
@@ -58,7 +58,7 @@ public class FileRecord {
     /**
      * 上传者ID
      */
-    private Long uploaderId;
+    private String uploaderId;
     
     /**
      * 业务类型: chat-聊天, document-文档, avatar-头像
@@ -68,7 +68,7 @@ public class FileRecord {
     /**
      * 关联业务ID
      */
-    private Long businessId;
+    private String businessId;
     
     /**
      * 下载次数

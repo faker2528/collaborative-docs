@@ -14,45 +14,45 @@ public interface FriendService {
     /**
      * 获取好友列表
      */
-    List<UserDTO> getFriendList(Long userId);
+    List<UserDTO> getFriendList(String userId);
     
     /**
      * 发送好友请求
      */
-    void sendFriendRequest(Long fromUserId, SendFriendRequest request);
+    void sendFriendRequest(String fromUserId, SendFriendRequest request);
     
     /**
      * 获取收到的好友请求列表
      */
-    List<FriendRequestDTO> getReceivedRequests(Long userId);
+    List<FriendRequestDTO> getReceivedRequests(String userId);
     
     /**
      * 获取发送的好友请求列表
      */
-    List<FriendRequestDTO> getSentRequests(Long userId);
+    List<FriendRequestDTO> getSentRequests(String userId);
     
     /**
      * 获取待处理的好友请求数量
      */
-    int getPendingRequestCount(Long userId);
+    int getPendingRequestCount(String userId);
     
     /**
      * 同意好友请求
      */
-    void acceptRequest(Long requestId, Long userId);
+    void acceptRequest(String requestId, String userId);
     
     /**
      * 拒绝好友请求
      */
-    void rejectRequest(Long requestId, Long userId);
+    void rejectRequest(String requestId, String userId);
     
     /**
      * 删除好友
      */
-    void deleteFriend(Long userId, Long friendId);
+    void deleteFriend(String userId, String friendId);
     
     /**
      * 检查是否为好友
      */
-    boolean isFriend(Long userId, Long friendId);
+    boolean isFriend(String userId, String friendId);
 }

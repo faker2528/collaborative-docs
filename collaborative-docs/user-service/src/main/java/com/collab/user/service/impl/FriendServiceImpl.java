@@ -34,7 +34,7 @@ public class FriendServiceImpl implements FriendService {
     private final UserMapper userMapper;
     
     @Override
-    public List<UserDTO> getFriendList(Long userId) {
+    public List<UserDTO> getFriendList(String userId) {
         LambdaQueryWrapper<Friendship> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Friendship::getUserId, userId)
                .eq(Friendship::getStatus, 1);
@@ -44,7 +44,7 @@ public class FriendServiceImpl implements FriendService {
             return new ArrayList<>();
         }
         
-        List<Long> friendIds = friendships.stream()
+        List<String> friendIds = friendships.stream()
                 .map(Friendship::getFriendId)
                 .collect(Collectors.toList());
         
@@ -54,8 +54,8 @@ public class FriendServiceImpl implements FriendService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void sendFriendRequest(Long fromUserId, SendFriendRequest request) {
-        Long toUserId = Long.parseLong(request.getToUserId());
+    public void sendFriendRequest(String fromUserId, SendFriendRequest request) {
+        String toUserId = request.getToUserId();
         
         // 不能添加自己为好友
         if (fromUserId.equals(toUserId)) {
@@ -100,7 +100,7 @@ public class FriendServiceImpl implements FriendService {
     }
     
     @Override
-    public List<FriendRequestDTO> getReceivedRequests(Long userId) {
+    public List<FriendRequestDTO> getReceivedRequests(String userId) {
         LambdaQueryWrapper<FriendRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FriendRequest::getToUserId, userId)
                .orderByDesc(FriendRequest::getCreateTime);
@@ -108,9 +108,9 @@ public class FriendServiceImpl implements FriendService {
         List<FriendRequest> requests = friendRequestMapper.selectList(wrapper);
         return requests.stream().map(req -> {
             FriendRequestDTO dto = new FriendRequestDTO();
-            dto.setId(String.valueOf(req.getId()));
-            dto.setFromUserId(String.valueOf(req.getFromUserId()));
-            dto.setToUserId(String.valueOf(req.getToUserId()));
+            dto.setId(req.getId());
+            dto.setFromUserId(req.getFromUserId());
+            dto.setToUserId(req.getToUserId());
             dto.setMessage(req.getMessage());
             dto.setStatus(req.getStatus());
             dto.setCreateTime(req.getCreateTime());
@@ -127,7 +127,7 @@ public class FriendServiceImpl implements FriendService {
     }
     
     @Override
-    public List<FriendRequestDTO> getSentRequests(Long userId) {
+    public List<FriendRequestDTO> getSentRequests(String userId) {
         LambdaQueryWrapper<FriendRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FriendRequest::getFromUserId, userId)
                .orderByDesc(FriendRequest::getCreateTime);
@@ -135,9 +135,9 @@ public class FriendServiceImpl implements FriendService {
         List<FriendRequest> requests = friendRequestMapper.selectList(wrapper);
         return requests.stream().map(req -> {
             FriendRequestDTO dto = new FriendRequestDTO();
-            dto.setId(String.valueOf(req.getId()));
-            dto.setFromUserId(String.valueOf(req.getFromUserId()));
-            dto.setToUserId(String.valueOf(req.getToUserId()));
+            dto.setId(req.getId());
+            dto.setFromUserId(req.getFromUserId());
+            dto.setToUserId(req.getToUserId());
             dto.setMessage(req.getMessage());
             dto.setStatus(req.getStatus());
             dto.setCreateTime(req.getCreateTime());
@@ -146,7 +146,7 @@ public class FriendServiceImpl implements FriendService {
     }
     
     @Override
-    public int getPendingRequestCount(Long userId) {
+    public int getPendingRequestCount(String userId) {
         LambdaQueryWrapper<FriendRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FriendRequest::getToUserId, userId)
                .eq(FriendRequest::getStatus, 0);
@@ -155,7 +155,7 @@ public class FriendServiceImpl implements FriendService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void acceptRequest(Long requestId, Long userId) {
+    public void acceptRequest(String requestId, String userId) {
         FriendRequest request = friendRequestMapper.selectById(requestId);
         if (request == null) {
             throw new BusinessException("好友请求不存在");
@@ -180,7 +180,7 @@ public class FriendServiceImpl implements FriendService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void rejectRequest(Long requestId, Long userId) {
+    public void rejectRequest(String requestId, String userId) {
         FriendRequest request = friendRequestMapper.selectById(requestId);
         if (request == null) {
             throw new BusinessException("好友请求不存在");
@@ -200,7 +200,7 @@ public class FriendServiceImpl implements FriendService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteFriend(Long userId, Long friendId) {
+    public void deleteFriend(String userId, String friendId) {
         // 删除双向好友关系
         LambdaQueryWrapper<Friendship> wrapper1 = new LambdaQueryWrapper<>();
         wrapper1.eq(Friendship::getUserId, userId)
@@ -216,7 +216,7 @@ public class FriendServiceImpl implements FriendService {
     }
     
     @Override
-    public boolean isFriend(Long userId, Long friendId) {
+    public boolean isFriend(String userId, String friendId) {
         LambdaQueryWrapper<Friendship> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Friendship::getUserId, userId)
                .eq(Friendship::getFriendId, friendId)
@@ -224,7 +224,7 @@ public class FriendServiceImpl implements FriendService {
         return friendshipMapper.selectCount(wrapper) > 0;
     }
     
-    private void createFriendship(Long userId, Long friendId) {
+    private void createFriendship(String userId, String friendId) {
         // 检查是否已存在
         LambdaQueryWrapper<Friendship> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Friendship::getUserId, userId)
@@ -245,7 +245,7 @@ public class FriendServiceImpl implements FriendService {
     
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
-        dto.setId(String.valueOf(user.getId()));
+        dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setNickname(user.getNickname());

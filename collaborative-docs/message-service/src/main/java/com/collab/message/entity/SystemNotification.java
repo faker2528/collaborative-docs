@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class SystemNotification {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 通知类型: 1-平台通知, 2-功能更新, 3-文档操作提醒, 4-权限变更
@@ -33,7 +33,7 @@ public class SystemNotification {
     /**
      * 接收者ID（null表示全体用户）
      */
-    private Long receiverId;
+    private String receiverId;
     
     /**
      * 关联业务类型: document-文档, user-用户
@@ -43,7 +43,7 @@ public class SystemNotification {
     /**
      * 关联业务ID
      */
-    private Long refId;
+    private String refId;
     
     /**
      * 跳转链接

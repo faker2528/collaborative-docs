@@ -14,17 +14,17 @@ import java.time.LocalDateTime;
 public class ShareLink implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 创建者ID
      */
-    private Long creatorId;
+    private String creatorId;
     
     /**
      * 分享令牌

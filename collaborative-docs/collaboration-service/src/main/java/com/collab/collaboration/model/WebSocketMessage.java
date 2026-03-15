@@ -19,12 +19,12 @@ public class WebSocketMessage {
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 发送者用户ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 发送者用户名
@@ -103,11 +103,11 @@ public class WebSocketMessage {
      */
     @Data
     public static class OnlineUser {
-        private Long userId;
+        private String userId;
         private String username;
         private String siteId;
 
-        public OnlineUser(Long userId, String username, String siteId) {
+        public OnlineUser(String userId, String username, String siteId) {
             this.userId = userId;
             this.username = username;
             this.siteId = siteId;
@@ -119,21 +119,21 @@ public class WebSocketMessage {
      */
     @Data
     public static class CommentData {
-        private Long id;
-        private Long documentId;
-        private Long userId;
+        private String id;
+        private String documentId;
+        private String userId;
         private String username;
         private String avatarUrl;
         private String text;
-        private Long parentId;
+        private String parentId;
         private Integer likeCount;
         private Boolean liked;
         private String createTime;
         
         public CommentData() {}
         
-        public CommentData(Long id, Long documentId, Long userId, String username, 
-                          String text, Long parentId) {
+        public CommentData(String id, String documentId, String userId, String username,
+                          String text, String parentId) {
             this.id = id;
             this.documentId = documentId;
             this.userId = userId;

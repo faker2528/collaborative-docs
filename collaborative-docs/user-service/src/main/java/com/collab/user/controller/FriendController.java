@@ -25,7 +25,7 @@ public class FriendController {
      * 获取好友列表
      */
     @GetMapping("/list")
-    public Result<List<UserDTO>> getFriendList(@RequestHeader("X-User-Id") Long userId) {
+    public Result<List<UserDTO>> getFriendList(@RequestHeader("X-User-Id") String userId) {
         List<UserDTO> friends = friendService.getFriendList(userId);
         return Result.success(friends);
     }
@@ -34,7 +34,7 @@ public class FriendController {
      * 发送好友请求
      */
     @PostMapping("/request")
-    public Result<Void> sendFriendRequest(@RequestHeader("X-User-Id") Long userId,
+    public Result<Void> sendFriendRequest(@RequestHeader("X-User-Id") String userId,
                                           @RequestBody SendFriendRequest request) {
         friendService.sendFriendRequest(userId, request);
         return Result.success("好友请求已发送", null);
@@ -44,7 +44,7 @@ public class FriendController {
      * 获取收到的好友请求
      */
     @GetMapping("/requests/received")
-    public Result<List<FriendRequestDTO>> getReceivedRequests(@RequestHeader("X-User-Id") Long userId) {
+    public Result<List<FriendRequestDTO>> getReceivedRequests(@RequestHeader("X-User-Id") String userId) {
         List<FriendRequestDTO> requests = friendService.getReceivedRequests(userId);
         return Result.success(requests);
     }
@@ -53,7 +53,7 @@ public class FriendController {
      * 获取发送的好友请求
      */
     @GetMapping("/requests/sent")
-    public Result<List<FriendRequestDTO>> getSentRequests(@RequestHeader("X-User-Id") Long userId) {
+    public Result<List<FriendRequestDTO>> getSentRequests(@RequestHeader("X-User-Id") String userId) {
         List<FriendRequestDTO> requests = friendService.getSentRequests(userId);
         return Result.success(requests);
     }
@@ -62,7 +62,7 @@ public class FriendController {
      * 获取待处理的好友请求数量
      */
     @GetMapping("/requests/pending/count")
-    public Result<Map<String, Integer>> getPendingRequestCount(@RequestHeader("X-User-Id") Long userId) {
+    public Result<Map<String, Integer>> getPendingRequestCount(@RequestHeader("X-User-Id") String userId) {
         int count = friendService.getPendingRequestCount(userId);
         return Result.success(Map.of("count", count));
     }
@@ -72,8 +72,8 @@ public class FriendController {
      */
     @PostMapping("/request/{requestId}/accept")
     public Result<Void> acceptRequest(@PathVariable("requestId") String requestId,
-                                      @RequestHeader("X-User-Id") Long userId) {
-        friendService.acceptRequest(Long.parseLong(requestId), userId);
+                                      @RequestHeader("X-User-Id") String userId) {
+        friendService.acceptRequest(requestId, userId);
         return Result.success("已添加好友", null);
     }
     
@@ -82,8 +82,8 @@ public class FriendController {
      */
     @PostMapping("/request/{requestId}/reject")
     public Result<Void> rejectRequest(@PathVariable("requestId") String requestId,
-                                      @RequestHeader("X-User-Id") Long userId) {
-        friendService.rejectRequest(Long.parseLong(requestId), userId);
+                                      @RequestHeader("X-User-Id") String userId) {
+        friendService.rejectRequest(requestId, userId);
         return Result.success("已拒绝请求", null);
     }
     
@@ -92,8 +92,8 @@ public class FriendController {
      */
     @DeleteMapping("/{friendId}")
     public Result<Void> deleteFriend(@PathVariable("friendId") String friendId,
-                                     @RequestHeader("X-User-Id") Long userId) {
-        friendService.deleteFriend(userId, Long.parseLong(friendId));
+                                     @RequestHeader("X-User-Id") String userId) {
+        friendService.deleteFriend(userId, friendId);
         return Result.success("已删除好友", null);
     }
     
@@ -102,8 +102,8 @@ public class FriendController {
      */
     @GetMapping("/check/{targetUserId}")
     public Result<Map<String, Boolean>> checkFriend(@PathVariable("targetUserId") String targetUserId,
-                                                    @RequestHeader("X-User-Id") Long userId) {
-        boolean isFriend = friendService.isFriend(userId, Long.parseLong(targetUserId));
+                                                    @RequestHeader("X-User-Id") String userId) {
+        boolean isFriend = friendService.isFriend(userId, targetUserId);
         return Result.success(Map.of("isFriend", isFriend));
     }
 }

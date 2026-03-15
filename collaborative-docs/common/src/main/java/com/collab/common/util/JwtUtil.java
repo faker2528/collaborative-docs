@@ -29,14 +29,14 @@ public class JwtUtil {
     /**
      * 生成Token
      */
-    public static String generateToken(Long userId, String username) {
+    public static String generateToken(String userId, String username) {
         return generateToken(userId, username, DEFAULT_SECRET, DEFAULT_EXPIRATION);
     }
 
     /**
      * 生成Token
      */
-    public static String generateToken(Long userId, String username, String secret, long expiration) {
+    public static String generateToken(String userId, String username, String secret, long expiration) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
@@ -99,16 +99,16 @@ public class JwtUtil {
     /**
      * 从Token中获取用户ID
      */
-    public static Long getUserId(String token) {
+    public static String getUserId(String token) {
         return getUserId(token, DEFAULT_SECRET);
     }
 
     /**
      * 从Token中获取用户ID
      */
-    public static Long getUserId(String token, String secret) {
+    public static String getUserId(String token, String secret) {
         Claims claims = parseToken(token, secret);
-        return claims.get("userId", Long.class);
+        return claims.get("userId", String.class);
     }
 
     /**

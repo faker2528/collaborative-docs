@@ -16,17 +16,17 @@ public class Comment {
      * 评论 ID
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private String id;
     
     /**
      * 文档 ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 用户 ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 评论内容
@@ -36,12 +36,12 @@ public class Comment {
     /**
      * 父评论 ID（顶级评论ID，用于分组）
      */
-    private Long parentId;
+    private String parentId;
     
     /**
      * 回复的目标评论 ID（用于标识回复的是哪条评论）
      */
-    private Long replyToId;
+    private String replyToId;
     
     /**
      * 点赞数

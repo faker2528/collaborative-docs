@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class User implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 用户名

@@ -14,17 +14,17 @@ import java.time.LocalDateTime;
 public class DocumentPermission implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 用户ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 权限类型: 1-查看, 2-编辑, 3-管理

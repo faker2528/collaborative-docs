@@ -19,7 +19,7 @@ public interface FileService {
      * @param businessId 业务ID
      * @return 文件记录
      */
-    FileRecordDTO upload(MultipartFile file, Long uploaderId, String businessType, Long businessId);
+    FileRecordDTO upload(MultipartFile file, String uploaderId, String businessType, String businessId);
     
     /**
      * 下载文件
@@ -27,21 +27,21 @@ public interface FileService {
      * @param userId 用户ID
      * @return 文件输入流
      */
-    InputStream download(Long fileId, Long userId);
+    InputStream download(String fileId, String userId);
     
     /**
      * 获取文件信息
      * @param fileId 文件ID
      * @return 文件记录
      */
-    FileRecordDTO getFileInfo(Long fileId);
+    FileRecordDTO getFileInfo(String fileId);
     
     /**
      * 删除文件
      * @param fileId 文件ID
      * @param userId 用户ID
      */
-    void delete(Long fileId, Long userId);
+    void delete(String fileId, String userId);
     
     /**
      * 获取用户上传的文件列表
@@ -51,5 +51,5 @@ public interface FileService {
      * @param size 每页大小
      * @return 文件列表
      */
-    List<FileRecordDTO> getUserFiles(Long userId, String businessType, Integer page, Integer size);
+    List<FileRecordDTO> getUserFiles(String userId, String businessType, Integer page, Integer size);
 }

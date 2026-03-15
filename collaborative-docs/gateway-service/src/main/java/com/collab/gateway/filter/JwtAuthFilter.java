@@ -91,7 +91,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             }
 
             // 从Token中获取用户信息
-            Long userId = JwtUtil.getUserId(token);
+            String userId = JwtUtil.getUserId(token);
             String username = JwtUtil.getUsername(token);
 
             // 验证Token是否在Redis中（防止Token被注销后继续使用）

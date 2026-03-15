@@ -35,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private final CollaborationClient collaborationClient;
     
     @Override
-    public List<CommentDTO> getComments(Long documentId, Long userId) {
+    public List<CommentDTO> getComments(String documentId, String userId) {
         log.info("获取文档评论列表，documentId: {}, userId: {}", documentId, userId);
         
         // 使用 LambdaQueryWrapper 查询评论
@@ -62,7 +62,7 @@ public class CommentServiceImpl implements CommentService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommentDTO addComment(Long documentId, Long userId, String text, Long parentId, Long replyToId) {
+    public CommentDTO addComment(String documentId, String userId, String text, String parentId, String replyToId) {
         log.info("添加评论，documentId: {}, userId: {}, text: {}, parentId: {}, replyToId: {}", 
                 documentId, userId, text, parentId, replyToId);
         
@@ -92,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 广播评论消息
      */
-    private void broadcastComment(Long documentId, CommentDTO comment, boolean isReply) {
+    private void broadcastComment(String documentId, CommentDTO comment, boolean isReply) {
         try {
             collaborationClient.broadcastComment(
                     documentId,
@@ -112,7 +112,7 @@ public class CommentServiceImpl implements CommentService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteComment(Long commentId, Long userId) {
+    public void deleteComment(String commentId, String userId) {
         log.info("删除评论，commentId: {}, userId: {}", commentId, userId);
         
         Comment comment = commentMapper.selectById(commentId);
@@ -131,7 +131,7 @@ public class CommentServiceImpl implements CommentService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void likeComment(Long commentId, Long userId) {
+    public void likeComment(String commentId, String userId) {
         log.info("点赞/取消点赞，commentId: {}, userId: {}", commentId, userId);
         
         // 检查评论是否存在
@@ -178,12 +178,12 @@ public class CommentServiceImpl implements CommentService {
     private CommentDTO convertToDTO(Comment comment) {
         CommentDTO dto = new CommentDTO();
         // 将 Long 类型转为 String，避免前端精度丢失
-        dto.setId(String.valueOf(comment.getId()));
-        dto.setDocumentId(String.valueOf(comment.getDocumentId()));
-        dto.setUserId(String.valueOf(comment.getUserId()));
+        dto.setId(comment.getId());
+        dto.setDocumentId(comment.getDocumentId());
+        dto.setUserId(comment.getUserId());
         dto.setText(comment.getText());
-        dto.setParentId(comment.getParentId() != null ? String.valueOf(comment.getParentId()) : null);
-        dto.setReplyToId(comment.getReplyToId() != null ? String.valueOf(comment.getReplyToId()) : null);
+        dto.setParentId(comment.getParentId() != null ? comment.getParentId() : null);
+        dto.setReplyToId(comment.getReplyToId() != null ? comment.getReplyToId() : null);
         dto.setLikeCount(comment.getLikeCount());
         dto.setCreateTime(comment.getCreateTime());
         

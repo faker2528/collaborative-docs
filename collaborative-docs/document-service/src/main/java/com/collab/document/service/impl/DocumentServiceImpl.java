@@ -44,7 +44,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DocumentDTO createDocument(CreateDocumentRequest request, Long userId) {
+    public DocumentDTO createDocument(CreateDocumentRequest request, String userId) {
         log.debug("【Creating document】: title={}, userId={}", request.getTitle(), userId);
         
         // 创建文档
@@ -79,7 +79,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentDTO getDocument(Long documentId, Long userId) {
+    public DocumentDTO getDocument(String documentId, String userId) {
         log.debug("【Get document】: id={}, userId={}", documentId, userId);
 
         Document document = null;
@@ -123,7 +123,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<DocumentDTO> getUserDocuments(Long userId) {
+    public List<DocumentDTO> getUserDocuments(String userId) {
         List<DocumentDTO> result = new ArrayList<>();
 
         // 获取用户创建的文档
@@ -153,7 +153,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DocumentDTO updateDocument(Long documentId, String content, Long userId) {
+    public DocumentDTO updateDocument(String documentId, String content, String userId) {
         // 检查编辑权限
         if (!hasPermission(documentId, userId, PERMISSION_EDIT)) {
             throw new BusinessException(ResultCode.DOCUMENT_NO_PERMISSION);
@@ -175,7 +175,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDocument(Long documentId, Long userId) {
+    public void deleteDocument(String documentId, String userId) {
         // 检查管理权限
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
@@ -199,7 +199,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void shareDocument(Long documentId, Long targetUserId, Integer permissionType, Long operatorId) {
+    public void shareDocument(String documentId, String targetUserId, Integer permissionType, String operatorId) {
         // 检查操作者是否有编辑权限（至少要能编辑才能邀请他人）
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
@@ -250,7 +250,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public boolean hasPermission(Long documentId, Long userId, Integer requiredPermission) {
+    public boolean hasPermission(String documentId, String userId, Integer requiredPermission) {
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
             return false;
@@ -268,7 +268,7 @@ public class DocumentServiceImpl implements DocumentService {
     /**
      * 获取用户对文档的权限
      */
-    private Integer getPermission(Long documentId, Long userId) {
+    private Integer getPermission(String documentId, String userId) {
         // 首先检查是否是创建者
         Document document = documentMapper.selectById(documentId);
         if (document != null && document.getCreatorId().equals(userId)) {
@@ -284,10 +284,10 @@ public class DocumentServiceImpl implements DocumentService {
     private DocumentDTO convertToDTO(Document document, Integer permissionType) {
         DocumentDTO dto = new DocumentDTO();
         // 将ID转换为字符串以避免前端精度问题
-        dto.setId(String.valueOf(document.getId()));
+        dto.setId(document.getId());
         dto.setTitle(document.getTitle());
         dto.setContent(document.getContent());
-        dto.setCreatorId(String.valueOf(document.getCreatorId()));
+        dto.setCreatorId(document.getCreatorId());
         dto.setVersion(document.getVersion());
         dto.setStatus(document.getStatus());
         dto.setCreateTime(document.getCreateTime());
@@ -297,7 +297,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
     
     @Override
-    public List<DocumentMemberDTO> getDocumentMembers(Long documentId, Long userId) {
+    public List<DocumentMemberDTO> getDocumentMembers(String documentId, String userId) {
         // 检查用户是否有权限查看成员列表
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
@@ -312,7 +312,7 @@ public class DocumentServiceImpl implements DocumentService {
         
         // 添加创建者
         DocumentMemberDTO creator = new DocumentMemberDTO();
-        creator.setUserId(String.valueOf(document.getCreatorId()));
+        creator.setUserId(document.getCreatorId());
         creator.setIsCreator(true);
         creator.setPermissionType(PERMISSION_MANAGE);
         
@@ -341,7 +341,7 @@ public class DocumentServiceImpl implements DocumentService {
             }
             
             DocumentMemberDTO member = new DocumentMemberDTO();
-            member.setUserId(String.valueOf(perm.getUserId()));
+            member.setUserId(perm.getUserId());
             member.setPermissionType(perm.getPermissionType());
             member.setIsCreator(false);
             
@@ -364,7 +364,7 @@ public class DocumentServiceImpl implements DocumentService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateMemberPermission(Long documentId, Long targetUserId, Integer permissionType, Long operatorId) {
+    public void updateMemberPermission(String documentId, String targetUserId, Integer permissionType, String operatorId) {
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
             throw new BusinessException(ResultCode.DOCUMENT_NOT_FOUND);
@@ -398,7 +398,7 @@ public class DocumentServiceImpl implements DocumentService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void removeMember(Long documentId, Long targetUserId, Long operatorId) {
+    public void removeMember(String documentId, String targetUserId, String operatorId) {
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
             throw new BusinessException(ResultCode.DOCUMENT_NOT_FOUND);

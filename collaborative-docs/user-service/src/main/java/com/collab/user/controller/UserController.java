@@ -45,7 +45,7 @@ public class UserController {
      * 退出登录
      */
     @PostMapping("/logout")
-    public Result<Void> logout(@RequestHeader("X-User-Id") Long userId) {
+    public Result<Void> logout(@RequestHeader("X-User-Id") String userId) {
         userService.logout(userId);
         return Result.success("退出成功", null);
     }
@@ -54,7 +54,7 @@ public class UserController {
      * 获取当前用户信息
      */
     @GetMapping("/info")
-    public Result<UserDTO> getUserInfo(@RequestHeader("X-User-Id") Long userId) {
+    public Result<UserDTO> getUserInfo(@RequestHeader("X-User-Id") String userId) {
         UserDTO user = userService.getUserInfo(userId);
         return Result.success(user);
     }
@@ -63,7 +63,7 @@ public class UserController {
      * 根据ID获取用户信息
      */
     @GetMapping("/{userId}")
-    public Result<UserDTO> getUserById(@PathVariable("userId") Long userId) {
+    public Result<UserDTO> getUserById(@PathVariable("userId") String userId) {
         UserDTO user = userService.getUserInfo(userId);
         return Result.success(user);
     }
@@ -73,7 +73,7 @@ public class UserController {
      */
     @GetMapping("/search")
     public Result<List<UserDTO>> searchUsers(@RequestParam("keyword") String keyword,
-                                              @RequestHeader("X-User-Id") Long userId) {
+                                              @RequestHeader("X-User-Id") String userId) {
         List<UserDTO> users = userService.searchUsers(keyword, userId);
         return Result.success(users);
     }
@@ -82,7 +82,7 @@ public class UserController {
      * 更新个人资料
      */
     @PutMapping("/profile")
-    public Result<UserDTO> updateProfile(@RequestHeader("X-User-Id") Long userId,
+    public Result<UserDTO> updateProfile(@RequestHeader("X-User-Id") String userId,
                                           @RequestBody UpdateProfileRequest request) {
         UserDTO user = userService.updateProfile(userId, request);
         return Result.success("资料更新成功", user);

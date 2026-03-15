@@ -27,7 +27,7 @@ public class MessageController {
      */
     @GetMapping("/conversations")
     public Result<List<ConversationDTO>> getConversationList(
-            @RequestHeader(value = "X-User-Id") Long userId) {
+            @RequestHeader(value = "X-User-Id") String userId) {
         List<ConversationDTO> list = messageService.getConversationList(userId);
         return Result.success(list);
     }
@@ -37,8 +37,8 @@ public class MessageController {
      */
     @GetMapping("/conversation/with/{targetUserId}")
     public Result<ConversationDTO> getOrCreateConversation(
-            @RequestHeader(value = "X-User-Id") Long userId,
-            @PathVariable(value = "targetUserId") Long targetUserId) {
+            @RequestHeader(value = "X-User-Id") String userId,
+            @PathVariable(value = "targetUserId") String targetUserId) {
         ConversationDTO conversation = messageService.getOrCreateConversation(userId, targetUserId);
         return Result.success(conversation);
     }
@@ -48,8 +48,8 @@ public class MessageController {
      */
     @GetMapping("/conversation/{conversationId}/messages")
     public Result<List<MessageDTO>> getMessageList(
-            @PathVariable(value = "conversationId") Long conversationId,
-            @RequestHeader(value = "X-User-Id") Long userId,
+            @PathVariable(value = "conversationId") String conversationId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "size", defaultValue = "20") Integer size) {
         List<MessageDTO> list = messageService.getMessageList(conversationId, userId, page, size);
@@ -61,7 +61,7 @@ public class MessageController {
      */
     @PostMapping("/send")
     public Result<MessageDTO> sendMessage(
-            @RequestHeader(value = "X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @Valid @RequestBody SendMessageRequest request) {
         MessageDTO message = messageService.sendMessage(userId, request);
         return Result.success("发送成功", message);
@@ -72,8 +72,8 @@ public class MessageController {
      */
     @PostMapping("/conversation/{conversationId}/read")
     public Result<Void> markConversationRead(
-            @PathVariable(value = "conversationId") Long conversationId,
-            @RequestHeader(value = "X-User-Id") Long userId) {
+            @PathVariable(value = "conversationId") String conversationId,
+            @RequestHeader(value = "X-User-Id") String userId) {
         messageService.markConversationRead(conversationId, userId);
         return Result.success("已标记为已读", null);
     }
@@ -83,8 +83,8 @@ public class MessageController {
      */
     @DeleteMapping("/conversation/{conversationId}")
     public Result<Void> deleteConversation(
-            @PathVariable(value = "conversationId") Long conversationId,
-            @RequestHeader(value = "X-User-Id") Long userId) {
+            @PathVariable(value = "conversationId") String conversationId,
+            @RequestHeader(value = "X-User-Id") String userId) {
         messageService.deleteConversation(conversationId, userId);
         return Result.success("会话已删除", null);
     }
@@ -94,7 +94,7 @@ public class MessageController {
      */
     @GetMapping("/unread/count")
     public Result<Map<String, Integer>> getUnreadCount(
-            @RequestHeader(value = "X-User-Id") Long userId) {
+            @RequestHeader(value = "X-User-Id") String userId) {
         Integer count = messageService.getUnreadCount(userId);
         return Result.success(Map.of("count", count));
     }

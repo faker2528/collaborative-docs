@@ -22,11 +22,11 @@ public class DocumentHistoryController {
      * 保存文档版本
      */
     @PostMapping("/save")
-    public Result<DocumentHistory> saveVersion(@RequestParam Long documentId,
+    public Result<DocumentHistory> saveVersion(@RequestParam String documentId,
                                                 @RequestBody String content,
                                                 @RequestParam(defaultValue = "2") Integer operationType,
                                                 @RequestParam(required = false) String operationDesc,
-                                                @RequestHeader("X-User-Id") Long userId,
+                                                @RequestHeader("X-User-Id") String userId,
                                                 @RequestHeader("X-Username") String username) {
         DocumentHistory history = historyService.saveVersion(documentId, content, operationType, 
                 operationDesc, userId, username);
@@ -37,7 +37,7 @@ public class DocumentHistoryController {
      * 获取文档历史版本列表
      */
     @GetMapping("/{documentId}/list")
-    public Result<List<DocumentHistory>> getVersionList(@PathVariable Long documentId) {
+    public Result<List<DocumentHistory>> getVersionList(@PathVariable String documentId) {
         List<DocumentHistory> versions = historyService.getVersionList(documentId);
         return Result.success(versions);
     }
@@ -46,7 +46,7 @@ public class DocumentHistoryController {
      * 获取指定版本
      */
     @GetMapping("/{documentId}/version/{version}")
-    public Result<DocumentHistory> getVersion(@PathVariable Long documentId,
+    public Result<DocumentHistory> getVersion(@PathVariable String documentId,
                                                @PathVariable Integer version) {
         DocumentHistory history = historyService.getVersion(documentId, version);
         return Result.success(history);
@@ -56,9 +56,9 @@ public class DocumentHistoryController {
      * 回滚到指定版本
      */
     @PostMapping("/{documentId}/rollback/{version}")
-    public Result<DocumentHistory> rollbackToVersion(@PathVariable Long documentId,
+    public Result<DocumentHistory> rollbackToVersion(@PathVariable String documentId,
                                                       @PathVariable Integer version,
-                                                      @RequestHeader("X-User-Id") Long userId,
+                                                      @RequestHeader("X-User-Id") String userId,
                                                       @RequestHeader("X-Username") String username) {
         DocumentHistory history = historyService.rollbackToVersion(documentId, version, userId, username);
         return Result.success("版本回滚成功", history);
@@ -68,7 +68,7 @@ public class DocumentHistoryController {
      * 获取最新版本号
      */
     @GetMapping("/{documentId}/latest-version")
-    public Result<Integer> getLatestVersion(@PathVariable Long documentId) {
+    public Result<Integer> getLatestVersion(@PathVariable String documentId) {
         Integer version = historyService.getLatestVersion(documentId);
         return Result.success(version);
     }

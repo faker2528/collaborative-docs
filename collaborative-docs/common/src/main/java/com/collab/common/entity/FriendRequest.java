@@ -14,17 +14,17 @@ import java.time.LocalDateTime;
 public class FriendRequest implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 发送者ID
      */
-    private Long fromUserId;
+    private String fromUserId;
     
     /**
      * 接收者ID
      */
-    private Long toUserId;
+    private String toUserId;
     
     /**
      * 附加消息

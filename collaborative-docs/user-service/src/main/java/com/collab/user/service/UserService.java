@@ -23,12 +23,12 @@ public interface UserService {
     /**
      * 退出登录
      */
-    void logout(Long userId);
+    void logout(String userId);
     
     /**
      * 获取用户信息
      */
-    UserDTO getUserInfo(Long userId);
+    UserDTO getUserInfo(String userId);
     
     /**
      * 根据用户名获取用户
@@ -41,10 +41,10 @@ public interface UserService {
      * @param currentUserId 当前用户ID（排除自己）
      * @return 用户列表
      */
-    java.util.List<UserDTO> searchUsers(String keyword, Long currentUserId);
+    java.util.List<UserDTO> searchUsers(String keyword, String currentUserId);
     
     /**
      * 更新用户资料
      */
-    UserDTO updateProfile(Long userId, com.collab.common.dto.UpdateProfileRequest request);
+    UserDTO updateProfile(String userId, com.collab.common.dto.UpdateProfileRequest request);
 }

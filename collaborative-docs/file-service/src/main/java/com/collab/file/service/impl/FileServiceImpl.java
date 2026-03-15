@@ -38,7 +38,7 @@ public class FileServiceImpl implements FileService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public FileRecordDTO upload(MultipartFile file, Long uploaderId, String businessType, Long businessId) {
+    public FileRecordDTO upload(MultipartFile file, String uploaderId, String businessType, String businessId) {
         // 校验文件
         validateFile(file);
         
@@ -77,20 +77,20 @@ public class FileServiceImpl implements FileService {
             
             fileRecordMapper.insert(record);
             
-            log.info("文件上传成功: {} -> {}", originalName, filePath);
+            log.info("【文件上传】文件上传成功: {} -> {}", originalName, filePath);
             return convertToDTO(record, storageStrategy);
             
         } catch (Exception e) {
-            log.error("文件上传失败: {}", originalName, e);
-            throw new BusinessException("文件上传失败: " + e.getMessage());
+            log.error("【文件上传】文件上传失败: {}", originalName, e);
+            throw new BusinessException("【文件上传】文件上传失败: " + e.getMessage());
         }
     }
     
     @Override
-    public InputStream download(Long fileId, Long userId) {
+    public InputStream download(String fileId, String userId) {
         FileRecord record = fileRecordMapper.selectById(fileId);
         if (record == null || record.getStatus() != 1) {
-            throw new BusinessException("文件不存在");
+            throw new BusinessException("【文件下载】文件不存在");
         }
         
         try {
@@ -103,16 +103,16 @@ public class FileServiceImpl implements FileService {
             
             return inputStream;
         } catch (Exception e) {
-            log.error("文件下载失败: {}", fileId, e);
-            throw new BusinessException("文件下载失败: " + e.getMessage());
+            log.error("【文件下载】文件下载失败: {}", fileId, e);
+            throw new BusinessException("【文件下载】文件下载失败: " + e.getMessage());
         }
     }
     
     @Override
-    public FileRecordDTO getFileInfo(Long fileId) {
+    public FileRecordDTO getFileInfo(String fileId) {
         FileRecord record = fileRecordMapper.selectById(fileId);
         if (record == null || record.getStatus() != 1) {
-            throw new BusinessException("文件不存在");
+            throw new BusinessException("【文件信息】文件不存在");
         }
         
         StorageStrategy strategy = getStorageStrategy(record.getStorageType());
@@ -121,15 +121,15 @@ public class FileServiceImpl implements FileService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Long fileId, Long userId) {
+    public void delete(String fileId, String userId) {
         FileRecord record = fileRecordMapper.selectById(fileId);
         if (record == null) {
-            throw new BusinessException("文件不存在");
+            throw new BusinessException("【文件删除】文件不存在");
         }
         
         // 验证权限
         if (!record.getUploaderId().equals(userId)) {
-            throw new BusinessException("无权删除此文件");
+            throw new BusinessException("【文件删除】无权删除此文件");
         }
         
         try {
@@ -142,15 +142,15 @@ public class FileServiceImpl implements FileService {
             record.setUpdateTime(LocalDateTime.now());
             fileRecordMapper.updateById(record);
             
-            log.info("文件已删除: {}", fileId);
+            log.info("【文件删除】文件已删除: {}", fileId);
         } catch (Exception e) {
-            log.error("文件删除失败: {}", fileId, e);
-            throw new BusinessException("文件删除失败: " + e.getMessage());
+            log.error("【文件删除】文件删除失败: {}", fileId, e);
+            throw new BusinessException("【文件删除】文件删除失败: " + e.getMessage());
         }
     }
     
     @Override
-    public List<FileRecordDTO> getUserFiles(Long userId, String businessType, Integer page, Integer size) {
+    public List<FileRecordDTO> getUserFiles(String userId, String businessType, Integer page, Integer size) {
         LambdaQueryWrapper<FileRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FileRecord::getUploaderId, userId)
                .eq(FileRecord::getStatus, 1);
@@ -210,7 +210,7 @@ public class FileServiceImpl implements FileService {
     
     private FileRecordDTO convertToDTO(FileRecord record, StorageStrategy strategy) {
         FileRecordDTO dto = new FileRecordDTO();
-        dto.setId(String.valueOf(record.getId()));
+        dto.setId(record.getId());
         dto.setOriginalName(record.getOriginalName());
         dto.setFileSize(record.getFileSize());
         dto.setFileType(record.getFileType());

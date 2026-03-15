@@ -69,7 +69,7 @@ public class MinioStorageStrategy implements StorageStrategy {
                 .contentType(contentType)
                 .build());
         
-        log.info("文件已上传到MinIO: {}/{}", bucket, objectName);
+        log.info("【MinIO】文件已上传到MinIO: {}/{}", bucket, objectName);
         return objectName;
     }
     
@@ -98,7 +98,7 @@ public class MinioStorageStrategy implements StorageStrategy {
                 .object(filePath)
                 .build());
         
-        log.info("文件已从MinIO删除: {}/{}", bucket, filePath);
+        log.info("【MinIO】文件已从MinIO删除: {}/{}", bucket, filePath);
     }
     
     @Override

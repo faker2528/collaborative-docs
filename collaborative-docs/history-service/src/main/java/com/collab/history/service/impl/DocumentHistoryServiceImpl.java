@@ -24,8 +24,8 @@ public class DocumentHistoryServiceImpl implements DocumentHistoryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DocumentHistory saveVersion(Long documentId, String content, Integer operationType,
-                                        String operationDesc, Long operatorId, String operatorName) {
+    public DocumentHistory saveVersion(String documentId, String content, Integer operationType,
+                                        String operationDesc, String operatorId, String operatorName) {
         // 获取当前最大版本号
         Integer latestVersion = getLatestVersion(documentId);
         int newVersion = latestVersion != null ? latestVersion + 1 : 1;
@@ -46,7 +46,7 @@ public class DocumentHistoryServiceImpl implements DocumentHistoryService {
     }
 
     @Override
-    public List<DocumentHistory> getVersionList(Long documentId) {
+    public List<DocumentHistory> getVersionList(String documentId) {
         LambdaQueryWrapper<DocumentHistory> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocumentHistory::getDocumentId, documentId)
                 .orderByDesc(DocumentHistory::getVersion);
@@ -54,7 +54,7 @@ public class DocumentHistoryServiceImpl implements DocumentHistoryService {
     }
 
     @Override
-    public DocumentHistory getVersion(Long documentId, Integer version) {
+    public DocumentHistory getVersion(String documentId, Integer version) {
         LambdaQueryWrapper<DocumentHistory> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocumentHistory::getDocumentId, documentId)
                 .eq(DocumentHistory::getVersion, version);
@@ -63,7 +63,7 @@ public class DocumentHistoryServiceImpl implements DocumentHistoryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DocumentHistory rollbackToVersion(Long documentId, Integer version, Long operatorId, String operatorName) {
+    public DocumentHistory rollbackToVersion(String documentId, Integer version, String operatorId, String operatorName) {
         // 获取目标版本
         DocumentHistory targetVersion = getVersion(documentId, version);
         if (targetVersion == null) {
@@ -76,7 +76,7 @@ public class DocumentHistoryServiceImpl implements DocumentHistoryService {
     }
 
     @Override
-    public Integer getLatestVersion(Long documentId) {
+    public Integer getLatestVersion(String documentId) {
         LambdaQueryWrapper<DocumentHistory> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocumentHistory::getDocumentId, documentId)
                 .orderByDesc(DocumentHistory::getVersion)

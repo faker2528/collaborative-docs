@@ -14,17 +14,17 @@ import java.time.LocalDateTime;
 public class Friendship implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 用户ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 好友ID
      */
-    private Long friendId;
+    private String friendId;
     
     /**
      * 状态: 0-已删除, 1-正常

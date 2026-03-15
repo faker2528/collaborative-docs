@@ -23,12 +23,12 @@ public class CollaborationInternalController {
      */
     @PostMapping("/broadcast-comment")
     public Result<Void> broadcastComment(
-            @RequestParam Long documentId,
-            @RequestParam Long commentId,
-            @RequestParam Long userId,
+            @RequestParam String documentId,
+            @RequestParam String commentId,
+            @RequestParam String userId,
             @RequestParam String username,
             @RequestParam String text,
-            @RequestParam(required = false) Long parentId,
+            @RequestParam(required = false) String parentId,
             @RequestParam(defaultValue = "false") boolean isReply
     ) {
         try {
@@ -39,6 +39,9 @@ public class CollaborationInternalController {
             webSocketHandler.broadcastComment(documentId, commentData, isReply);
             
             return Result.success();
+        } catch (NumberFormatException e) {
+            log.error("Invalid ID format: {}", e.getMessage());
+            return Result.error("ID 格式错误: " + e.getMessage());
         } catch (Exception e) {
             log.error("Failed to broadcast comment: {}", e.getMessage(), e);
             return Result.error("广播评论失败: " + e.getMessage());

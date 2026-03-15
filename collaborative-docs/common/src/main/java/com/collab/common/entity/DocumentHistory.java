@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 public class DocumentHistory implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 版本号
@@ -44,7 +44,7 @@ public class DocumentHistory implements Serializable {
     /**
      * 操作者ID
      */
-    private Long operatorId;
+    private String operatorId;
     
     /**
      * 操作者名称

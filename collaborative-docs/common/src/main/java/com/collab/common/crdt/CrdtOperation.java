@@ -49,7 +49,7 @@ public class CrdtOperation implements Serializable {
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 操作时间戳
@@ -68,7 +68,7 @@ public class CrdtOperation implements Serializable {
     /**
      * 创建插入操作
      */
-    public static CrdtOperation insert(CrdtChar character, String siteId, long clock, Long documentId) {
+    public static CrdtOperation insert(CrdtChar character, String siteId, long clock, String documentId) {
         CrdtOperation op = new CrdtOperation();
         op.setType(OperationType.INSERT);
         op.setCharacter(character);
@@ -82,7 +82,7 @@ public class CrdtOperation implements Serializable {
     /**
      * 创建删除操作
      */
-    public static CrdtOperation delete(CharId targetId, String siteId, long clock, Long documentId) {
+    public static CrdtOperation delete(CharId targetId, String siteId, long clock, String documentId) {
         CrdtOperation op = new CrdtOperation();
         op.setType(OperationType.DELETE);
         op.setTargetId(targetId);
@@ -97,7 +97,7 @@ public class CrdtOperation implements Serializable {
      * 创建格式化操作
      */
     public static CrdtOperation format(CharId targetId, Map<String, Object> attributes, 
-                                        String siteId, long clock, Long documentId) {
+                                        String siteId, long clock, String documentId) {
         CrdtOperation op = new CrdtOperation();
         op.setType(OperationType.FORMAT);
         op.setTargetId(targetId);

@@ -29,7 +29,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     private final RedisMessageListenerContainer listenerContainer;
     
     // 本实例的用户会话映射
-    private static final Map<Long, WebSocketSession> localUserSessions = new ConcurrentHashMap<>();
+    private static final Map<String, WebSocketSession> localUserSessions = new ConcurrentHashMap<>();
     
     // Redis频道名称
     private static final String MESSAGE_CHANNEL = "message:push:channel";
@@ -39,7 +39,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     private static final long ONLINE_TTL = 300;
     
     // 同步锁，防止WebSocket并发写
-    private static final Map<Long, Object> sessionLocks = new ConcurrentHashMap<>();
+    private static final Map<String, Object> sessionLocks = new ConcurrentHashMap<>();
     
     @PostConstruct
     public void init() {
@@ -57,7 +57,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        Long userId = getUserIdFromSession(session);
+        String userId = getUserIdFromSession(session);
         if (userId != null) {
             localUserSessions.put(userId, session);
             sessionLocks.put(userId, new Object());
@@ -70,7 +70,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
-        Long userId = getUserIdFromSession(session);
+        String userId = getUserIdFromSession(session);
         if ("ping".equals(payload)) {
             sendToLocalSession(userId, session, "pong");
             // 刷新在线状态
@@ -82,7 +82,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        Long userId = getUserIdFromSession(session);
+        String userId = getUserIdFromSession(session);
         if (userId != null) {
             localUserSessions.remove(userId);
             sessionLocks.remove(userId);
@@ -95,7 +95,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.error("WebSocket传输错误", exception);
-        Long userId = getUserIdFromSession(session);
+        String userId = getUserIdFromSession(session);
         if (userId != null) {
             localUserSessions.remove(userId);
             sessionLocks.remove(userId);
@@ -109,7 +109,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     /**
      * 向指定用户发送消息（支持跨实例）
      */
-    public void sendMessageToUser(Long userId, MessageDTO message) {
+    public void sendMessageToUser(String userId, MessageDTO message) {
         String json = JSON.toJSONString(Map.of(
             "type", "NEW_MESSAGE",
             "data", message
@@ -131,7 +131,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     /**
      * 向指定用户发送未读数更新（支持跨实例）
      */
-    public void sendUnreadCountUpdate(Long userId, int unreadCount) {
+    public void sendUnreadCountUpdate(String userId, int unreadCount) {
         String json = JSON.toJSONString(Map.of(
             "type", "UNREAD_COUNT",
             "data", unreadCount
@@ -149,7 +149,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     /**
      * 检查用户是否在线（通过Redis）
      */
-    public boolean isUserOnline(Long userId) {
+    public boolean isUserOnline(String userId) {
         // 先检查本地
         WebSocketSession session = localUserSessions.get(userId);
         if (session != null && session.isOpen()) {
@@ -161,7 +161,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     
     // ========== 私有方法 ==========
     
-    private void markUserOnline(Long userId) {
+    private void markUserOnline(String userId) {
         redisTemplate.opsForValue().set(
             USER_ONLINE_PREFIX + userId, 
             "1", 
@@ -169,14 +169,14 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
         );
     }
     
-    private void markUserOffline(Long userId) {
+    private void markUserOffline(String userId) {
         redisTemplate.delete(USER_ONLINE_PREFIX + userId);
     }
     
     /**
      * 发送消息到本地用户会话（带同步锁防止并发写）
      */
-    private boolean sendToLocalUser(Long userId, String json) {
+    private boolean sendToLocalUser(String userId, String json) {
         WebSocketSession session = localUserSessions.get(userId);
         if (session != null && session.isOpen()) {
             return sendToLocalSession(userId, session, json);
@@ -187,7 +187,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     /**
      * 同步发送消息到WebSocket会话
      */
-    private boolean sendToLocalSession(Long userId, WebSocketSession session, String json) {
+    private boolean sendToLocalSession(String userId, WebSocketSession session, String json) {
         Object lock = sessionLocks.computeIfAbsent(userId, k -> new Object());
         synchronized (lock) {
             if (session.isOpen()) {
@@ -205,7 +205,7 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     /**
      * 发布消息到Redis频道
      */
-    private void publishToRedis(Long userId, String json) {
+    private void publishToRedis(String userId, String json) {
         String redisMessage = JSON.toJSONString(Map.of(
             "userId", userId,
             "payload", json
@@ -219,8 +219,8 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
     private void handleRedisPushMessage(String message) {
         try {
             Map<String, Object> data = JSON.parseObject(message);
-            Long userId = Long.valueOf(data.get("userId").toString());
-            String payload = data.get("payload").toString();
+            String userId = (String) data.get("userId");
+            String payload = (String) data.get("payload");
             
             // 检查本地是否有该用户的会话
             sendToLocalUser(userId, payload);
@@ -229,10 +229,10 @@ public class MessageWebSocketHandler extends TextWebSocketHandler {
         }
     }
     
-    private Long getUserIdFromSession(WebSocketSession session) {
+    private String getUserIdFromSession(WebSocketSession session) {
         Object userId = session.getAttributes().get("userId");
         if (userId != null) {
-            return Long.valueOf(userId.toString());
+            return userId.toString();
         }
         return null;
     }

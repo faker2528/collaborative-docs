@@ -50,7 +50,7 @@ public class MessageServiceImpl implements MessageService {
     private static final long UNREAD_COUNT_TTL = 60;
     
     @Override
-    public List<ConversationDTO> getConversationList(Long userId) {
+    public List<ConversationDTO> getConversationList(String userId) {
         LambdaQueryWrapper<Conversation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Conversation::getUserId, userId)
                .orderByDesc(Conversation::getPinned)
@@ -77,7 +77,7 @@ public class MessageServiceImpl implements MessageService {
     }
     
     @Override
-    public List<MessageDTO> getMessageList(Long conversationId, Long userId, Integer page, Integer size) {
+    public List<MessageDTO> getMessageList(String conversationId, String userId, Integer page, Integer size) {
         // 验证会话归属
         Conversation conversation = conversationMapper.selectById(conversationId);
         if (conversation == null || !conversation.getUserId().equals(userId)) {
@@ -108,9 +108,9 @@ public class MessageServiceImpl implements MessageService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public MessageDTO sendMessage(Long senderId, SendMessageRequest request) {
-        Long receiverId = request.getReceiverId();
-        
+    public MessageDTO sendMessage(String senderId, SendMessageRequest request) {
+        String receiverId = request.getReceiverId();
+
         // 获取或创建发送者的会话
         Conversation senderConv = getOrCreateConversationEntity(senderId, receiverId);
         // 获取或创建接收者的会话
@@ -179,7 +179,7 @@ public class MessageServiceImpl implements MessageService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markConversationRead(Long conversationId, Long userId) {
+    public void markConversationRead(String conversationId, String userId) {
         Conversation conversation = conversationMapper.selectById(conversationId);
         if (conversation == null || !conversation.getUserId().equals(userId)) {
             throw new BusinessException("会话不存在");
@@ -203,7 +203,7 @@ public class MessageServiceImpl implements MessageService {
     }
     
     @Override
-    public void markMessageRead(Long messageId, Long userId) {
+    public void markMessageRead(String messageId, String userId) {
         Message message = messageMapper.selectById(messageId);
         if (message != null && message.getReceiverId().equals(userId)) {
             message.setStatus(2);
@@ -213,7 +213,7 @@ public class MessageServiceImpl implements MessageService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteConversation(Long conversationId, Long userId) {
+    public void deleteConversation(String conversationId, String userId) {
         Conversation conversation = conversationMapper.selectById(conversationId);
         if (conversation == null || !conversation.getUserId().equals(userId)) {
             throw new BusinessException("会话不存在");
@@ -235,7 +235,7 @@ public class MessageServiceImpl implements MessageService {
     }
     
     @Override
-    public Integer getUnreadCount(Long userId) {
+    public Integer getUnreadCount(String userId) {
         String cacheKey = UNREAD_COUNT_PREFIX + userId;
         
         try {
@@ -269,7 +269,7 @@ public class MessageServiceImpl implements MessageService {
     }
     
     @Override
-    public ConversationDTO getOrCreateConversation(Long userId, Long targetUserId) {
+    public ConversationDTO getOrCreateConversation(String userId, String targetUserId) {
         Conversation conversation = getOrCreateConversationEntity(userId, targetUserId);
         ConversationDTO dto = convertToDTO(conversation);
         
@@ -288,7 +288,7 @@ public class MessageServiceImpl implements MessageService {
     /**
      * 增加用户未读消息数缓存
      */
-    private void incrementUnreadCountCache(Long userId) {
+    private void incrementUnreadCountCache(String userId) {
         String cacheKey = UNREAD_COUNT_PREFIX + userId;
         try {
             Long newValue = redisTemplate.opsForValue().increment(cacheKey);
@@ -306,7 +306,7 @@ public class MessageServiceImpl implements MessageService {
     /**
      * 减少用户未读消息数缓存
      */
-    private void decrementUnreadCountCache(Long userId, int count) {
+    private void decrementUnreadCountCache(String userId, int count) {
         if (count <= 0) return;
         String cacheKey = UNREAD_COUNT_PREFIX + userId;
         try {
@@ -321,7 +321,7 @@ public class MessageServiceImpl implements MessageService {
         }
     }
     
-    private Conversation getOrCreateConversationEntity(Long userId, Long targetUserId) {
+    private Conversation getOrCreateConversationEntity(String userId, String targetUserId) {
         LambdaQueryWrapper<Conversation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Conversation::getUserId, userId)
                .eq(Conversation::getTargetUserId, targetUserId);
@@ -358,7 +358,7 @@ public class MessageServiceImpl implements MessageService {
         return content.length() > 50 ? content.substring(0, 50) + "..." : content;
     }
     
-    private UserDTO getUserInfo(Long userId) {
+    private UserDTO getUserInfo(String userId) {
         if (userId == null) return null;
         
         String cacheKey = USER_CACHE_PREFIX + userId;
@@ -400,12 +400,12 @@ public class MessageServiceImpl implements MessageService {
         return dto;
     }
     
-    private MessageDTO convertToDTO(Message msg, Long currentUserId) {
+    private MessageDTO convertToDTO(Message msg, String currentUserId) {
         MessageDTO dto = new MessageDTO();
-        dto.setId(String.valueOf(msg.getId()));
-        dto.setConversationId(String.valueOf(msg.getConversationId()));
-        dto.setSenderId(String.valueOf(msg.getSenderId()));
-        dto.setReceiverId(String.valueOf(msg.getReceiverId()));
+        dto.setId(msg.getId());
+        dto.setConversationId(msg.getConversationId());
+        dto.setSenderId(msg.getSenderId());
+        dto.setReceiverId(msg.getReceiverId());
         dto.setType(msg.getType());
         dto.setContent(msg.getContent());
         dto.setAttachmentUrl(msg.getAttachmentUrl());

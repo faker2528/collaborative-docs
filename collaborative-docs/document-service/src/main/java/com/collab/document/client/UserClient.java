@@ -16,5 +16,5 @@ public interface UserClient {
      * 获取用户信息
      */
     @GetMapping("/{userId}")
-    Result<UserDTO> getUserById(@PathVariable("userId") Long userId);
+    Result<UserDTO> getUserById(@PathVariable("userId") String userId); // Changed from Long to String
 }

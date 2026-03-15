@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Document implements Serializable {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 文档标题
@@ -29,7 +29,7 @@ public class Document implements Serializable {
     /**
      * 创建者ID
      */
-    private Long creatorId;
+    private String creatorId;
     
     /**
      * 当前版本号

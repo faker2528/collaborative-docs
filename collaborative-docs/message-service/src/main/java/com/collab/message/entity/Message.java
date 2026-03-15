@@ -13,22 +13,22 @@ import java.time.LocalDateTime;
 public class Message {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 会话ID
      */
-    private Long conversationId;
+    private String conversationId;
     
     /**
      * 发送者ID
      */
-    private Long senderId;
+    private String senderId;
     
     /**
      * 接收者ID
      */
-    private Long receiverId;
+    private String receiverId;
     
     /**
      * 消息类型: 1-文字, 2-图片, 3-文件, 4-系统通知

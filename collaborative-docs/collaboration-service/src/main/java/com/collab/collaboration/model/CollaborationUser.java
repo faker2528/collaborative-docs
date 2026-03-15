@@ -12,7 +12,7 @@ public class CollaborationUser {
     /**
      * 用户ID
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 用户名
@@ -27,7 +27,7 @@ public class CollaborationUser {
     /**
      * 文档ID
      */
-    private Long documentId;
+    private String documentId;
     
     /**
      * 用户站点ID（用于CRDT）
@@ -39,7 +39,7 @@ public class CollaborationUser {
      */
     private long joinTime;
 
-    public CollaborationUser(Long userId, String username, WebSocketSession session, Long documentId) {
+    public CollaborationUser(String userId, String username, WebSocketSession session, String documentId) {
         this.userId = userId;
         this.username = username;
         this.session = session;

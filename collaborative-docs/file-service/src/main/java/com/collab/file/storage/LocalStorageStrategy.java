@@ -49,7 +49,7 @@ public class LocalStorageStrategy implements StorageStrategy {
             }
         }
         
-        log.info("文件已保存到本地: {}", filePath);
+        log.info("【文件上传】文件已保存到本地: {}", filePath);
         return dateDir + "/" + storedName;
     }
     
@@ -59,7 +59,7 @@ public class LocalStorageStrategy implements StorageStrategy {
         Path path = Paths.get(basePath, filePath);
         
         if (!Files.exists(path)) {
-            throw new FileNotFoundException("文件不存在: " + filePath);
+            throw new FileNotFoundException("【文件下载】文件不存在: " + filePath);
         }
         
         return new FileInputStream(path.toFile());
@@ -72,7 +72,7 @@ public class LocalStorageStrategy implements StorageStrategy {
         
         if (Files.exists(path)) {
             Files.delete(path);
-            log.info("文件已删除: {}", path);
+            log.info("【文件删除】文件已删除: {}", path);
         }
     }
     

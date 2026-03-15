@@ -16,5 +16,5 @@ public interface DocumentPermissionMapper extends BaseMapper<DocumentPermission>
      * 获取用户对文档的权限类型
      */
     @Select("SELECT permission_type FROM t_document_permission WHERE document_id = #{documentId} AND user_id = #{userId}")
-    Integer getPermissionType(@Param("documentId") Long documentId, @Param("userId") Long userId);
+    Integer getPermissionType(@Param("documentId") String documentId, @Param("userId") String userId);
 }

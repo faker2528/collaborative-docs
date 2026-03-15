@@ -57,9 +57,9 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        Long userId = (Long) session.getAttributes().get("userId");
+        String userId = (String) session.getAttributes().get("userId");
         String username = (String) session.getAttributes().get("username");
-        Long documentId = (Long) session.getAttributes().get("documentId");
+        String documentId = (String) session.getAttributes().get("documentId");
 
         log.info("WebSocket connection established: user={}, document={}, session={}", 
                 username, documentId, session.getId());
@@ -93,7 +93,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 初始化房间文档内容
      */
-    private void initRoomContent(Long documentId, Long userId) {
+    private void initRoomContent(String documentId, String userId) {
         int maxRetries = 3;
         int retryDelay = 500; // 毫秒
         
@@ -181,7 +181,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        Long documentId = user.getDocumentId();
+        String documentId = user.getDocumentId();
         
         // 从 operation.character.value 中提取 Delta JSON
         if (operation.getCharacter() != null && operation.getCharacter().getValue() != null) {
@@ -205,7 +205,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        Long documentId = user.getDocumentId();
+        String documentId = user.getDocumentId();
 
         // 应用所有操作
         for (CrdtOperation operation : operations) {
@@ -242,7 +242,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
      * 发送加入成功消息
      */
     private void sendJoinedMessage(WebSocketSession session, CollaborationUser user) {
-        Long documentId = user.getDocumentId();
+        String documentId = user.getDocumentId();
         
         WebSocketMessage response = new WebSocketMessage();
         response.setType(MessageType.JOINED);
@@ -258,7 +258,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播用户加入消息
      */
-    private void broadcastUserJoined(Long documentId, CollaborationUser newUser, String excludeSessionId) {
+    private void broadcastUserJoined(String documentId, CollaborationUser newUser, String excludeSessionId) {
         WebSocketMessage message = new WebSocketMessage();
         message.setType(MessageType.USER_JOINED);
         message.setDocumentId(documentId);
@@ -274,7 +274,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播用户离开消息
      */
-    private void broadcastUserLeft(Long documentId, CollaborationUser user) {
+    private void broadcastUserLeft(String documentId, CollaborationUser user) {
         WebSocketMessage message = new WebSocketMessage();
         message.setType(MessageType.USER_LEFT);
         message.setDocumentId(documentId);
@@ -290,7 +290,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播单个操作
      */
-    private void broadcastOperation(Long documentId, CrdtOperation operation, String excludeSessionId) {
+    private void broadcastOperation(String documentId, CrdtOperation operation, String excludeSessionId) {
         WebSocketMessage message = new WebSocketMessage();
         message.setType(MessageType.REMOTE_OPERATION);
         message.setDocumentId(documentId);
@@ -303,7 +303,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播批量操作
      */
-    private void broadcastOperations(Long documentId, List<CrdtOperation> operations, String excludeSessionId) {
+    private void broadcastOperations(String documentId, List<CrdtOperation> operations, String excludeSessionId) {
         WebSocketMessage message = new WebSocketMessage();
         message.setType(MessageType.REMOTE_OPERATIONS);
         message.setDocumentId(documentId);
@@ -316,7 +316,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播消息到房间内所有用户
      */
-    private void broadcastToRoom(Long documentId, WebSocketMessage message, String excludeSessionId) {
+    private void broadcastToRoom(String documentId, WebSocketMessage message, String excludeSessionId) {
         Collection<CollaborationUser> users = roomManager.getRoomUsers(documentId);
         String jsonMessage = JSON.toJSONString(message);
 
@@ -365,7 +365,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 获取在线用户列表
      */
-    private List<OnlineUser> getOnlineUsers(Long documentId) {
+    private List<OnlineUser> getOnlineUsers(String documentId) {
         return roomManager.getRoomUsers(documentId).stream()
                 .map(u -> new OnlineUser(u.getUserId(), u.getUsername(), u.getSiteId()))
                 .collect(Collectors.toList());
@@ -374,7 +374,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 广播评论消息到文档房间（供外部调用）
      */
-    public void broadcastComment(Long documentId, WebSocketMessage.CommentData commentData, boolean isReply) {
+    public void broadcastComment(String documentId, WebSocketMessage.CommentData commentData, boolean isReply) {
         WebSocketMessage message = new WebSocketMessage();
         message.setType(isReply ? MessageType.COMMENT_REPLY : MessageType.COMMENT_ADDED);
         message.setDocumentId(documentId);
@@ -394,7 +394,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         sessionLocks.remove(session.getId()); // 清理锁
         
         if (user != null) {
-            Long documentId = user.getDocumentId();
+            String documentId = user.getDocumentId();
             
             // 先从房间移除用户（这样 getOnlineUsers 获取的列表才是正确的）
             roomManager.leaveRoom(documentId, session.getId());
@@ -416,7 +416,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     /**
      * 保存文档内容到数据库
      */
-    private void saveDocumentContent(Long documentId, CollaborationRoom room) {
+    private void saveDocumentContent(String documentId, CollaborationRoom room) {
         // 只在有未保存的编辑时才保存
         if (!room.isDirty()) {
             log.debug("Room {} has no unsaved changes, skip auto-save", documentId);
@@ -432,7 +432,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             }
             
             // 使用房间创建者的ID来保存
-            Long creatorId = room.getCreatorUserId();
+            String creatorId = room.getCreatorUserId();
             if (creatorId == null) {
                 log.warn("Room {} has no creator, cannot save", documentId);
                 return;

@@ -15,14 +15,14 @@ public interface DocumentClient {
      * 获取文档详情
      */
     @GetMapping("/{documentId}")
-    Result<DocumentDTO> getDocument(@PathVariable("documentId") Long documentId,
-                                    @RequestHeader("X-User-Id") Long userId);
+    Result<DocumentDTO> getDocument(@PathVariable("documentId") String documentId,
+                                    @RequestHeader("X-User-Id") String userId);
     
     /**
      * 更新文档内容
      */
     @PutMapping("/{documentId}")
-    Result<DocumentDTO> updateDocument(@PathVariable("documentId") Long documentId,
+    Result<DocumentDTO> updateDocument(@PathVariable("documentId") String documentId,
                                        @RequestBody String content,
-                                       @RequestHeader("X-User-Id") Long userId);
+                                       @RequestHeader("X-User-Id") String userId);
 }

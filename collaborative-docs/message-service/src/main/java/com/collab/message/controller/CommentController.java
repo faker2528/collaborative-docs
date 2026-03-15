@@ -23,8 +23,8 @@ public class CommentController {
      * 获取文档评论列表
      */
     @GetMapping("/{documentId}/list")
-    public Result<List<CommentDTO>> getComments(@PathVariable("documentId") Long documentId,
-                                                 @RequestHeader("X-User-Id") Long userId) {
+    public Result<List<CommentDTO>> getComments(@PathVariable("documentId") String documentId,
+                                                 @RequestHeader("X-User-Id") String userId) {
         List<CommentDTO> comments = commentService.getComments(documentId, userId);
         return Result.success(comments);
     }
@@ -34,11 +34,11 @@ public class CommentController {
      */
     @PostMapping
     public Result<CommentDTO> addComment(@RequestBody Map<String, Object> request,
-                                         @RequestHeader("X-User-Id") Long userId) {
-        Long documentId = Long.parseLong(request.get("documentId").toString());
+                                         @RequestHeader("X-User-Id") String userId) {
+        String documentId = (String) request.get("documentId");
         String text = (String) request.get("text");
-        Long parentId = request.get("parentId") != null ? Long.parseLong(request.get("parentId").toString()) : null;
-        Long replyToId = request.get("replyToId") != null ? Long.parseLong(request.get("replyToId").toString()) : null;
+        String parentId = (String) request.get("parentId");
+        String replyToId = (String) request.get("replyToId");
         
         CommentDTO comment = commentService.addComment(documentId, userId, text, parentId, replyToId);
         return Result.success("评论已发布", comment);
@@ -48,8 +48,8 @@ public class CommentController {
      * 删除评论
      */
     @DeleteMapping("/{commentId}")
-    public Result<Void> deleteComment(@PathVariable("commentId") Long commentId,
-                                      @RequestHeader("X-User-Id") Long userId) {
+    public Result<Void> deleteComment(@PathVariable("commentId") String commentId,
+                                      @RequestHeader("X-User-Id") String userId) {
         commentService.deleteComment(commentId, userId);
         return Result.success("评论已删除", null);
     }
@@ -59,10 +59,10 @@ public class CommentController {
      */
     @PostMapping("/reply")
     public Result<CommentDTO> replyComment(@RequestBody Map<String, Object> request,
-                                           @RequestHeader("X-User-Id") Long userId) {
-        Long documentId = Long.parseLong(request.get("documentId").toString());
-        Long parentId = Long.parseLong(request.get("parentId").toString());
-        Long replyToId = request.get("replyToId") != null ? Long.parseLong(request.get("replyToId").toString()) : parentId;
+                                           @RequestHeader("X-User-Id") String userId) {
+        String documentId = (String) request.get("documentId");
+        String parentId = (String) request.get("parentId");
+        String replyToId = request.get("replyToId") != null ? (String) request.get("replyToId") : parentId;
         String text = (String) request.get("text");
         
         CommentDTO comment = commentService.addComment(documentId, userId, text, parentId, replyToId);
@@ -73,8 +73,8 @@ public class CommentController {
      * 点赞评论
      */
     @PostMapping("/{commentId}/like")
-    public Result<Void> likeComment(@PathVariable("commentId") Long commentId,
-                                    @RequestHeader("X-User-Id") Long userId) {
+    public Result<Void> likeComment(@PathVariable("commentId") String commentId,
+                                    @RequestHeader("X-User-Id") String userId) {
         commentService.likeComment(commentId, userId);
         return Result.success("点赞成功", null);
     }

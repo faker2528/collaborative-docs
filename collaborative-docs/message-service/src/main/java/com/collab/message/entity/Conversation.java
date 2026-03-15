@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Conversation {
     
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     
     /**
      * 会话类型: 1-好友私聊, 2-陌生人私聊, 3-系统消息, 4-申请消息
@@ -23,12 +23,12 @@ public class Conversation {
     /**
      * 用户ID（会话所属用户）
      */
-    private Long userId;
+    private String userId;
     
     /**
      * 对方用户ID（私聊时）
      */
-    private Long targetUserId;
+    private String targetUserId;
     
     /**
      * 会话标题（系统消息时使用）
@@ -38,7 +38,7 @@ public class Conversation {
     /**
      * 最后一条消息ID
      */
-    private Long lastMessageId;
+    private String lastMessageId;
     
     /**
      * 最后一条消息内容摘要

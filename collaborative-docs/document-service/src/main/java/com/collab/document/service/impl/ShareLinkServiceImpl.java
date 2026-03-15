@@ -48,7 +48,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ShareLinkDTO createShareLink(CreateShareLinkRequest request, Long userId) {
+    public ShareLinkDTO createShareLink(CreateShareLinkRequest request, String userId) {
         log.info("开始创建分享链接，userId: {}, documentId: {}", userId, request.getDocumentId());
             
         // 参数校验
@@ -57,18 +57,18 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         }
             
         // 解析 documentId
-        Long documentId;
+        String documentId;
         try {
-            documentId = Long.parseLong(request.getDocumentId());
+            documentId = request.getDocumentId();
         } catch (NumberFormatException e) {
-            log.error("文档 ID 格式错误：{}", request.getDocumentId());
+            log.error("【创建分享链接】文档 ID 格式错误：{}", request.getDocumentId());
             throw new BusinessException("文档 ID 格式错误");
         }
             
         // 验证文档存在
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
-            log.warn("文档不存在：documentId: {}", documentId);
+            log.warn("【创建分享链接】文档不存在：documentId: {}", documentId);
             throw new BusinessException("文档不存在");
         }
         
@@ -80,7 +80,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                        .eq(DocumentPermission::getUserId, userId);
             Long count = permissionMapper.selectCount(permWrapper);
             if (count == null || count == 0) {
-                log.warn("用户无权操作此文档：userId: {}, documentId: {}", userId, documentId);
+                log.warn("【创建分享链接】用户无权操作此文档：userId: {}, documentId: {}", userId, documentId);
                 throw new BusinessException("无权操作此文档");
             }
         }
@@ -125,7 +125,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                 throw new BusinessException("密码验证类型必须设置密码");
             }
             shareLink.setPassword(passwordEncoder.encode(request.getPassword()));
-            log.info("已加密存储访问密码");
+            log.info("【创建分享链接】已加密存储访问密码");
         } else if (verificationType == 2) {
             // 邮箱验证：验证邮箱格式
             if (!StringUtils.hasText(request.getEmail())) {
@@ -135,7 +135,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                 throw new BusinessException("邮箱格式不正确");
             }
             shareLink.setEmail(request.getEmail().trim().toLowerCase());
-            log.info("设置指定邮箱：{}", request.getEmail());
+            log.info("【创建分享链接】设置指定邮箱：{}", request.getEmail());
         }
             
         // 设置过期时间
@@ -143,7 +143,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         if (validDays != null && validDays > 0) {
             LocalDateTime expireTime = LocalDateTime.now().plusDays(validDays);
             shareLink.setExpireTime(expireTime);
-            log.info("设置链接过期时间：{}", expireTime);
+            log.info("【创建分享链接】设置链接过期时间：{}", expireTime);
         }
             
         // 设置使用次数限制
@@ -177,7 +177,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void joinByShareLink(String token, Long userId) {
+    public void joinByShareLink(String token, String userId) {
         log.info("用户尝试通过分享链接加入文档：userId: {}, token: {}", userId, token);
         
         if (!StringUtils.hasText(token)) {
@@ -194,7 +194,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         ShareLink shareLink = shareLinkMapper.selectOne(wrapper);
         
         if (shareLink == null) {
-            log.warn("分享链接不存在：token: {}", token);
+            log.warn("【加入文档协作】分享链接不存在：token: {}", token);
             throw new BusinessException("分享链接不存在");
         }
         
@@ -209,16 +209,16 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                 String verifyKey = RedisConstant.SHARE_LINK_VERIFIED_PREFIX + token;
                 String verified = redisTemplate.opsForValue().get(verifyKey);
                 if (!"1".equals(verified)) {
-                    log.warn("密码验证未通过：token: {}", token);
+                    log.warn("【加入文档协作】密码验证未通过：token: {}", token);
                     throw new BusinessException("请先通过密码验证");
                 }
                 // 验证成功后删除标记，避免重复使用
                 redisTemplate.delete(verifyKey);
-                log.info("密码验证通过：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
+                log.info("【加入文档协作】密码验证通过：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
                 
             } else if (verificationType == 2) {
                 // 邮箱验证：暂时不实现具体逻辑，留给后续扩展
-                log.info("邮箱验证类型：token: {}, requiredEmail: {}", token, shareLink.getEmail());
+                log.info("【加入文档协作】邮箱验证类型：token: {}, requiredEmail: {}", token, shareLink.getEmail());
                 // TODO: 未来可以通过 RPC 调用用户服务验证邮箱
             }
         }
@@ -230,7 +230,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         Long existingCount = permissionMapper.selectCount(permWrapper);
         
         if (existingCount != null && existingCount > 0) {
-            log.info("用户已有权限，跳过添加：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
+            log.info("【加入文档协作】用户已有权限，跳过添加：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
             return;
         }
         
@@ -242,33 +242,33 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         
         int permInsertResult = permissionMapper.insert(permission);
         if (permInsertResult != 1) {
-            log.error("添加文档权限失败：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
+            log.error("【加入文档协作】添加文档权限失败：userId: {}, documentId: {}", userId, shareLink.getDocumentId());
             throw new BusinessException("添加权限失败");
         }
-        log.info("添加文档权限成功：userId: {}, documentId: {}, permissionType: {}", 
+        log.info("【加入文档协作】添加文档权限成功：userId: {}, documentId: {}, permissionType: {}",
                 userId, shareLink.getDocumentId(), shareLink.getPermissionType());
         
         // 更新使用次数（使用乐观锁 CAS 操作）
         boolean updateSuccess = incrementUsedCountWithOptimisticLock(shareLink.getId(), shareLink.getUsedCount());
         if (!updateSuccess) {
-            log.warn("更新使用次数失败（可能并发冲突），重试中... token: {}", token);
+            log.warn("【加入文档协作】更新使用次数失败（可能并发冲突），重试中... token: {}", token);
             // 重新查询并更新
             ShareLink currentLink = shareLinkMapper.selectById(shareLink.getId());
             if (currentLink != null) {
                 currentLink.setUsedCount(currentLink.getUsedCount() + 1);
                 shareLinkMapper.updateById(currentLink);
-                log.info("重试更新使用次数成功：token: {}, usedCount: {}", token, currentLink.getUsedCount());
+                log.info("【加入文档协作】重试更新使用次数成功：token: {}, usedCount: {}", token, currentLink.getUsedCount());
             }
         } else {
-            log.info("更新使用次数成功：token: {}, newUsedCount: {}", token, shareLink.getUsedCount() + 1);
+            log.info("【加入文档协作】更新使用次数成功：token: {}, newUsedCount: {}", token, shareLink.getUsedCount() + 1);
         }
         
-        log.info("用户成功加入文档协作：userId: {}, documentId: {}, token: {}", 
+        log.info("【加入文档协作】用户成功加入文档协作：userId: {}, documentId: {}, token: {}",
                 userId, shareLink.getDocumentId(), token);
     }
     
     @Override
-    public List<ShareLinkDTO> getShareLinks(Long documentId, Long userId) {
+    public List<ShareLinkDTO> getShareLinks(String documentId, String userId) {
         log.info("获取文档分享链接列表：documentId: {}, userId: {}", documentId, userId);
         
         if (documentId == null) {
@@ -282,13 +282,13 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         // 验证文档存在
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
-            log.warn("文档不存在：documentId: {}", documentId);
+            log.warn("【获取文档分享链接列表】文档不存在：documentId: {}", documentId);
             throw new BusinessException("文档不存在");
         }
         
         // 只有文档创建者才能查看分享链接
         if (!document.getCreatorId().equals(userId)) {
-            log.warn("用户无权查看分享链接：userId: {}, documentId: {}", userId, documentId);
+            log.warn("【获取文档分享链接列表】用户无权查看分享链接：userId: {}, documentId: {}", userId, documentId);
             throw new BusinessException("无权查看分享链接");
         }
         
@@ -298,7 +298,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                .orderByDesc(ShareLink::getCreateTime);
         
         List<ShareLink> links = shareLinkMapper.selectList(wrapper);
-        log.info("查询到 {} 条分享链接记录", links.size());
+        log.info("【获取文档分享链接列表】查询到 {} 条分享链接记录", links.size());
         
         return links.stream()
                 .map(link -> convertToDTO(link, document.getTitle()))
@@ -307,7 +307,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void disableShareLink(Long linkId, Long userId) {
+    public void disableShareLink(String linkId, String userId) {
         log.info("禁用分享链接：linkId: {}, userId: {}", linkId, userId);
         
         if (linkId == null) {
@@ -320,13 +320,13 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         
         ShareLink shareLink = shareLinkMapper.selectById(linkId);
         if (shareLink == null) {
-            log.warn("分享链接不存在：linkId: {}", linkId);
+            log.warn("【禁用分享链接】分享链接不存在：linkId: {}", linkId);
             throw new BusinessException("分享链接不存在");
         }
         
         // 只有创建者才能禁用链接
         if (!shareLink.getCreatorId().equals(userId)) {
-            log.warn("用户无权操作此链接：userId: {}, linkId: {}", userId, linkId);
+            log.warn("【禁用分享链接】用户无权操作此链接：userId: {}, linkId: {}", userId, linkId);
             throw new BusinessException("无权操作此链接");
         }
         
@@ -335,11 +335,11 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         int updateResult = shareLinkMapper.updateById(shareLink);
         
         if (updateResult != 1) {
-            log.error("禁用分享链接失败：linkId: {}", linkId);
+            log.error("【禁用分享链接】禁用分享链接失败：linkId: {}", linkId);
             throw new BusinessException("禁用分享链接失败");
         }
         
-        log.info("成功禁用分享链接：linkId: {}, userId: {}", linkId, userId);
+        log.info("【禁用分享链接】成功禁用分享链接：linkId: {}, userId: {}", linkId, userId);
     }
     
     @Override
@@ -353,7 +353,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         ShareLink shareLink = shareLinkMapper.selectOne(wrapper);
         
         if (shareLink == null) {
-            log.debug("分享链接不存在：token: {}", token);
+            log.debug("【获取分享链接】分享链接不存在：token: {}", token);
             return null;
         }
         
@@ -365,7 +365,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
     
     @Override
     public Map<String, Object> getDocumentPreviewByToken(String token) {
-        log.debug("获取文档预览信息：token: {}", token);
+        log.debug("【获取文档预览信息】获取文档预览信息：token: {}", token);
         
         if (!StringUtils.hasText(token)) {
             return null;
@@ -377,7 +377,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         ShareLink shareLink = shareLinkMapper.selectOne(wrapper);
         
         if (shareLink == null || shareLink.getStatus() != 1) {
-            log.debug("分享链接不存在或已失效：token: {}", token);
+            log.debug("【获取文档预览信息】分享链接不存在或已失效：token: {}", token);
             return null;
         }
         
@@ -385,14 +385,14 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         try {
             validateShareLink(shareLink);
         } catch (BusinessException e) {
-            log.warn("分享链接校验失败：token: {}, message: {}", token, e.getMessage());
+            log.warn("【获取文档预览信息】分享链接校验失败：token: {}, message: {}", token, e.getMessage());
             return null;
         }
         
         // 获取文档信息
         Document document = documentMapper.selectById(shareLink.getDocumentId());
         if (document == null) {
-            log.warn("文档不存在：documentId: {}", shareLink.getDocumentId());
+            log.warn("【获取文档预览信息】文档不存在：documentId: {}", shareLink.getDocumentId());
             return null;
         }
         
@@ -420,7 +420,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
                 }
                 // 如果已经是 HTML 或其他格式，直接使用
             } catch (Exception e) {
-                log.warn("解析文档内容失败，使用原始内容：{}", e.getMessage());
+                log.warn("【获取文档预览信息】解析文档内容失败，使用原始内容：{}", e.getMessage());
                 // 使用原始内容
             }
         } else {
@@ -430,14 +430,14 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         previewData.put("content", content);
         previewData.put("createTime", document.getCreateTime());
         
-        log.debug("文档预览信息获取成功：token: {}, documentId: {}", token, document.getId());
+        log.debug("【获取文档预览信息】文档预览信息获取成功：token: {}, documentId: {}", token, document.getId());
         
         return previewData;
     }
     
     @Override
     public boolean verifyPassword(String token, String password) {
-        log.info("验证分享链接密码：token: {}", token);
+        log.info("【验证分享链接密码】验证分享链接密码：token: {}", token);
         
         if (!StringUtils.hasText(token)) {
             return false;
@@ -453,21 +453,21 @@ public class ShareLinkServiceImpl implements ShareLinkService {
         ShareLink shareLink = shareLinkMapper.selectOne(wrapper);
         
         if (shareLink == null || shareLink.getStatus() != 1) {
-            log.debug("分享链接不存在或已失效：token: {}", token);
+            log.debug("【验证分享链接密码】分享链接不存在或已失效：token: {}", token);
             return false;
         }
         
         // 检查验证类型是否为密码验证
         Integer verificationType = shareLink.getVerificationType();
         if (verificationType == null || verificationType != 1) {
-            log.warn("不是密码验证类型：token: {}, verificationType: {}", token, verificationType);
+            log.warn("【验证分享链接密码】不是密码验证类型：token: {}, verificationType: {}", token, verificationType);
             return false;
         }
         
         // 检查密码是否匹配（使用 BCrypt 加密比较）
         String encodedPassword = shareLink.getPassword();
         if (!StringUtils.hasText(encodedPassword)) {
-            log.warn("分享链接未设置密码：token: {}", token);
+            log.warn("【验证分享链接密码】分享链接未设置密码：token: {}", token);
             return false;
         }
         
@@ -477,9 +477,9 @@ public class ShareLinkServiceImpl implements ShareLinkService {
             // 密码验证成功，在 Redis 中存储验证标记，有效期 30 分钟
             String key = RedisConstant.SHARE_LINK_VERIFIED_PREFIX + token;
             redisTemplate.opsForValue().set(key, "1", 30, TimeUnit.MINUTES);
-            log.info("密码验证成功：token: {}, validFor: 30 minutes", token);
+            log.info("【验证分享链接密码】密码验证成功：token: {}, validFor: 30 minutes", token);
         } else {
-            log.warn("密码验证失败：token: {}", token);
+            log.warn("【验证分享链接密码】密码验证失败：token: {}", token);
         }
         
         return isValid;
@@ -602,7 +602,7 @@ public class ShareLinkServiceImpl implements ShareLinkService {
     /**
      * 使用乐观锁更新使用次数（防止并发问题）
      */
-    private boolean incrementUsedCountWithOptimisticLock(Long linkId, Integer currentUsedCount) {
+    private boolean incrementUsedCountWithOptimisticLock(String linkId, Integer currentUsedCount) {
         try {
             LambdaUpdateWrapper<ShareLink> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(ShareLink::getId, linkId)
