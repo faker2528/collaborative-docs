@@ -1,24 +1,29 @@
 <template>
   <div class="friends-container">
-    <el-row :gutter="20">
+    <el-row :gutter="24">
       <!-- 左侧：好友列表 -->
-      <el-col :span="14">
-        <el-card>
+      <el-col :xs="24" :lg="16">
+        <el-card shadow="hover" class="friends-card">
           <template #header>
             <div class="card-header">
-              <span>我的好友 ({{ friends.length }})</span>
-              <el-button type="primary" size="small" @click="showAddDialog = true">
+              <div class="header-left">
+                <h2 class="page-title">我的好友</h2>
+                <el-tag type="primary" round>{{ filteredFriends.length }}</el-tag>
+              </div>
+              <el-button type="primary" @click="showAddDialog = true">
                 <el-icon><Plus /></el-icon>
                 添加好友
               </el-button>
             </div>
           </template>
           
+          <!-- 搜索栏 -->
           <div class="search-bar">
             <el-input 
               v-model="searchKeyword" 
-              placeholder="搜索好友"
+              placeholder="搜索好友昵称或用户名"
               clearable
+              size="large"
             >
               <template #prefix>
                 <el-icon><Search /></el-icon>
@@ -26,93 +31,149 @@
             </el-input>
           </div>
           
-          <el-empty v-if="filteredFriends.length === 0" description="暂无好友" />
-          
-          <div v-else class="friend-list">
-            <div 
-              v-for="friend in filteredFriends" 
-              :key="friend.id" 
-              class="friend-item"
-            >
-              <el-avatar 
-                :size="48" 
-                :src="friend.avatar"
-                class="clickable-avatar"
-                @click.stop="goToUserProfile(friend.id)"
+          <!-- 好友列表 -->
+          <div v-loading="loading" class="friend-list-wrapper">
+            <el-empty v-if="!loading && filteredFriends.length === 0" description="暂无好友">
+              <el-button type="primary" @click="showAddDialog = true">去添加好友</el-button>
+            </el-empty>
+            
+            <div v-else class="friend-list">
+              <el-card 
+                v-for="friend in filteredFriends" 
+                :key="friend.id" 
+                shadow="hover"
+                class="friend-item"
               >
-                {{ friend.nickname?.charAt(0) || friend.username?.charAt(0) }}
-              </el-avatar>
-              <div class="friend-info">
-                <div class="friend-name">{{ friend.nickname || friend.username }}</div>
-                <div class="friend-username">@{{ friend.username }}</div>
-              </div>
-              <div class="friend-actions">
-                <el-button size="small" type="danger" text @click="handleDeleteFriend(friend)">
-                  <el-icon><Delete /></el-icon>
-                  删除
-                </el-button>
-              </div>
+                <div class="friend-content">
+                  <div class="friend-left">
+                    <el-avatar 
+                      :size="56" 
+                      :src="friend.avatar"
+                      class="friend-avatar"
+                      @click="goToUserProfile(friend.id)"
+                    >
+                      {{ friend.nickname?.charAt(0) || friend.username?.charAt(0) }}
+                    </el-avatar>
+                    <div class="friend-info">
+                      <div class="friend-name">{{ friend.nickname || friend.username }}</div>
+                      <div class="friend-username">@{{ friend.username }}</div>
+                      <div class="friend-bio" v-if="friend.bio">{{ friend.bio }}</div>
+                    </div>
+                  </div>
+                  <div class="friend-actions">
+                    <el-button 
+                      type="primary" 
+                      text 
+                      @click="startChat(friend.id)"
+                    >
+                      <el-icon><ChatDotRound /></el-icon>
+                      发消息
+                    </el-button>
+                    <el-dropdown trigger="click" @command="(cmd) => handleFriendCommand(cmd, friend)">
+                      <el-button text>
+                        <el-icon><MoreFilled /></el-icon>
+                      </el-button>
+                      <template #dropdown>
+                        <el-dropdown-menu>
+                          <el-dropdown-item command="view">
+                            <el-icon><User /></el-icon>
+                            查看主页
+                          </el-dropdown-item>
+                          <el-dropdown-item command="delete" divided>
+                            <el-icon><Delete /></el-icon>
+                            删除好友
+                          </el-dropdown-item>
+                        </el-dropdown-menu>
+                      </template>
+                    </el-dropdown>
+                  </div>
+                </div>
+              </el-card>
             </div>
           </div>
         </el-card>
       </el-col>
       
       <!-- 右侧：好友请求 -->
-      <el-col :span="10">
-        <el-card>
+      <el-col :xs="24" :lg="8">
+        <el-card shadow="hover" class="requests-card">
           <template #header>
-            <span>好友请求</span>
-            <el-badge v-if="pendingRequests.length > 0" :value="pendingRequests.length" class="badge" />
+            <div class="request-header">
+              <h3 class="request-title">好友请求</h3>
+              <el-badge 
+                v-if="pendingRequests.length > 0" 
+                :value="pendingRequests.length" 
+                :max="99"
+              />
+            </div>
           </template>
           
           <el-tabs v-model="activeTab">
             <el-tab-pane label="收到的请求" name="received">
-              <el-empty v-if="receivedRequests.length === 0" description="暂无请求" />
-              <div v-else class="request-list">
-                <div 
-                  v-for="req in receivedRequests" 
-                  :key="req.id" 
-                  class="request-item"
-                >
-                  <el-avatar 
-                    :size="40" 
-                    :src="req.fromAvatar"
-                    class="clickable-avatar"
-                    @click.stop="goToUserProfile(req.senderId)"
+              <div v-loading="loading" class="request-list-wrapper">
+                <el-empty v-if="!loading && receivedRequests.length === 0" description="暂无新请求" />
+                <div v-else class="request-list">
+                  <el-card 
+                    v-for="req in receivedRequests" 
+                    :key="req.id" 
+                    shadow="hover"
+                    class="request-item"
                   >
-                    {{ req.fromNickname?.charAt(0) || req.fromUsername?.charAt(0) }}
-                  </el-avatar>
-                  <div class="request-info">
-                    <div class="request-name">{{ req.fromNickname || req.fromUsername }}</div>
-                    <div class="request-message" v-if="req.message">{{ req.message }}</div>
-                    <div class="request-time">{{ formatTime(req.createTime) }}</div>
-                  </div>
-                  <div class="request-actions" v-if="req.status === 0">
-                    <el-button size="small" type="primary" @click="handleAccept(req)">同意</el-button>
-                    <el-button size="small" @click="handleReject(req)">拒绝</el-button>
-                  </div>
-                  <el-tag v-else :type="req.status === 1 ? 'success' : 'info'" size="small">
-                    {{ req.status === 1 ? '已同意' : '已拒绝' }}
-                  </el-tag>
+                    <div class="request-content">
+                      <el-avatar 
+                        :size="48" 
+                        :src="req.fromAvatar"
+                        @click="goToUserProfile(req.senderId)"
+                      >
+                        {{ req.fromNickname?.charAt(0) || req.fromUsername?.charAt(0) }}
+                      </el-avatar>
+                      <div class="request-info">
+                        <div class="request-name">{{ req.fromNickname || req.fromUsername }}</div>
+                        <div class="request-message" v-if="req.message">{{ req.message }}</div>
+                        <div class="request-time">{{ formatTime(req.createTime) }}</div>
+                      </div>
+                      <div class="request-actions" v-if="req.status === 0">
+                        <el-button size="small" type="primary" @click="handleAccept(req)">同意</el-button>
+                        <el-button size="small" @click="handleReject(req)">拒绝</el-button>
+                      </div>
+                      <el-tag 
+                        v-else 
+                        :type="req.status === 1 ? 'success' : 'info'" 
+                        size="small"
+                        round
+                      >
+                        {{ req.status === 1 ? '已接受' : '已拒绝' }}
+                      </el-tag>
+                    </div>
+                  </el-card>
                 </div>
               </div>
             </el-tab-pane>
             
             <el-tab-pane label="发出的请求" name="sent">
-              <el-empty v-if="sentRequests.length === 0" description="暂无请求" />
-              <div v-else class="request-list">
-                <div 
-                  v-for="req in sentRequests" 
-                  :key="req.id" 
-                  class="request-item"
-                >
-                  <div class="request-info">
-                    <div class="request-name">用户ID: {{ req.toUserId }}</div>
-                    <div class="request-time">{{ formatTime(req.createTime) }}</div>
-                  </div>
-                  <el-tag :type="getStatusType(req.status)" size="small">
-                    {{ getStatusText(req.status) }}
-                  </el-tag>
+              <div v-loading="loading" class="request-list-wrapper">
+                <el-empty v-if="!loading && sentRequests.length === 0" description="暂无发出请求" />
+                <div v-else class="request-list">
+                  <el-card 
+                    v-for="req in sentRequests" 
+                    :key="req.id" 
+                    shadow="hover"
+                    class="request-item"
+                  >
+                    <div class="request-content">
+                      <div class="request-info">
+                        <div class="request-name">用户ID: {{ req.toUserId }}</div>
+                        <div class="request-time">{{ formatTime(req.createTime) }}</div>
+                      </div>
+                      <el-tag 
+                        :type="getStatusType(req.status)" 
+                        size="small"
+                        round
+                      >
+                        {{ getStatusText(req.status) }}
+                      </el-tag>
+                    </div>
+                  </el-card>
                 </div>
               </div>
             </el-tab-pane>
@@ -383,152 +444,203 @@ function goToUserProfile(userId) {
 
 <style scoped lang="scss">
 .friends-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.friends-card {
+  margin-bottom: 24px;
   
-  .badge {
-    margin-left: 8px;
+  :deep(.el-card__header) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px 24px;
+    border-bottom: none;
   }
-}
-
-.search-bar {
-  margin-bottom: 16px;
-}
-
-.friend-list {
-  .friend-item {
+  
+  .card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    border-radius: 8px;
-    transition: background-color 0.2s;
     
-    &:hover {
-      background-color: #f5f7fa;
-    }
-    
-    .friend-info {
-      flex: 1;
-      margin-left: 12px;
-      
-      .friend-name {
-        font-weight: 500;
-        color: #303133;
-      }
-      
-      .friend-username {
-        font-size: 12px;
-        color: #909399;
-      }
-    }
-  }
-}
-
-.request-list {
-  .request-item {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #ebeef5;
-    
-    &:last-child {
-      border-bottom: none;
-    }
-    
-    .request-info {
-      flex: 1;
-      margin-left: 12px;
-      
-      .request-name {
-        font-weight: 500;
-        color: #303133;
-      }
-      
-      .request-message {
-        font-size: 12px;
-        color: #606266;
-        margin-top: 4px;
-      }
-      
-      .request-time {
-        font-size: 12px;
-        color: #909399;
-        margin-top: 4px;
-      }
-    }
-    
-    .request-actions {
+    .header-left {
       display: flex;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
+      
+      .page-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #fff;
+      }
     }
   }
-}
-
-.search-results {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  margin-bottom: 16px;
   
-  .user-item {
+  .search-bar {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e6eb;
+    background: #fafafa;
+  }
+  
+  .friend-list-wrapper {
+    padding: 24px;
+  }
+  
+  .friend-list {
     display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    flex-direction: column;
+    gap: 16px;
     
-    &:hover {
-      background-color: #f5f7fa;
-    }
-    
-    &.selected {
-      background-color: #ecf5ff;
-      border-left: 3px solid #409eff;
-    }
-    
-    .user-info {
-      margin-left: 12px;
-      flex: 1;
+    .friend-item {
+      transition: all 0.3s;
       
-      .username {
-        font-weight: 500;
-        color: #303133;
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       }
       
-      .nickname {
-        color: #909399;
-        font-size: 12px;
-        margin-left: 4px;
+      .friend-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        
+        .friend-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex: 1;
+          min-width: 0;
+          
+          .friend-avatar {
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            
+            &:hover {
+              transform: scale(1.1);
+            }
+          }
+          
+          .friend-info {
+            flex: 1;
+            min-width: 0;
+            
+            .friend-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: #1f2329;
+              margin-bottom: 4px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            
+            .friend-username {
+              font-size: 13px;
+              color: #86909c;
+              margin-bottom: 4px;
+            }
+            
+            .friend-bio {
+              font-size: 13px;
+              color: #4e5969;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+        }
+        
+        .friend-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
       }
-    }
-    
-    .check-icon {
-      color: #409eff;
-      font-size: 16px;
     }
   }
 }
 
-.no-results {
-  text-align: center;
-  padding: 20px;
-  color: #909399;
-}
-
-.clickable-avatar {
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+.requests-card {
+  :deep(.el-card__header) {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    padding: 20px 24px;
+    border-bottom: none;
+  }
   
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  .request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .request-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+  
+  .request-list-wrapper {
+    padding: 16px;
+  }
+  
+  .request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    .request-item {
+      transition: all 0.3s;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      
+      .request-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        
+        .request-info {
+          flex: 1;
+          min-width: 0;
+          
+          .request-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2329;
+            margin-bottom: 4px;
+          }
+          
+          .request-message {
+            font-size: 13px;
+            color: #4e5969;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .request-time {
+            font-size: 12px;
+            color: #86909c;
+          }
+        }
+        
+        .request-actions {
+          display: flex;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+      }
+    }
   }
 }
 </style>

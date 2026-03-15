@@ -44,7 +44,7 @@ const routes = [
       {
         path: 'document/:id',
         name: 'Document',
-        component: () => import('@/views/Document.vue')
+        component: () => import('@/views/DocumentEditor.vue')
       },
       {
         path: 'profile',
@@ -70,6 +70,11 @@ const routes = [
         path: 'files',
         name: 'FileManager',
         component: () => import('@/views/FileManager.vue')
+      },
+      {
+        path: 'file-explorer',
+        name: 'FileExplorer',
+        component: () => import('@/views/FileExplorer.vue')
       }
     ]
   }

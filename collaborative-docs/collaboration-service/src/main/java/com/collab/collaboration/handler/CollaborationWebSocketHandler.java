@@ -370,6 +370,23 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 .map(u -> new OnlineUser(u.getUserId(), u.getUsername(), u.getSiteId()))
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * 广播评论消息到文档房间（供外部调用）
+     */
+    public void broadcastComment(Long documentId, WebSocketMessage.CommentData commentData, boolean isReply) {
+        WebSocketMessage message = new WebSocketMessage();
+        message.setType(isReply ? MessageType.COMMENT_REPLY : MessageType.COMMENT_ADDED);
+        message.setDocumentId(documentId);
+        message.setComment(commentData);
+        message.setUserId(commentData.getUserId());
+        message.setUsername(commentData.getUsername());
+        message.setTimestamp(System.currentTimeMillis());
+        
+        broadcastToRoom(documentId, message, null);
+        log.info("Broadcast comment to document {}: commentId={}, isReply={}", 
+                documentId, commentData.getId(), isReply);
+    }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {

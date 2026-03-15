@@ -10,23 +10,27 @@ import lombok.Getter;
 public class BusinessException extends RuntimeException {
     
     private final Integer code;
-    private final String message;
-
+    
     public BusinessException(String message) {
         super(message);
-        this.code = ResultCode.ERROR.getCode();
-        this.message = message;
+        this.code = 500;
     }
-
+    
     public BusinessException(Integer code, String message) {
         super(message);
         this.code = code;
-        this.message = message;
     }
-
+    
+    public BusinessException(String message, Throwable cause) {
+        super(message, cause);
+        this.code = 500;
+    }
+    
+    /**
+     * 通过 ResultCode 构造业务异常
+     */
     public BusinessException(ResultCode resultCode) {
         super(resultCode.getMessage());
         this.code = resultCode.getCode();
-        this.message = resultCode.getMessage();
     }
 }

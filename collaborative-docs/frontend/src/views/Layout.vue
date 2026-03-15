@@ -19,49 +19,26 @@
           <template #title>首页</template>
         </el-menu-item>
         
-        <el-sub-menu index="documents">
-          <template #title>
-            <el-icon><Folder /></el-icon>
-            <span>文档管理</span>
-          </template>
-          <el-menu-item index="/documents">
-            <el-icon><Document /></el-icon>
-            <template #title>我的文档</template>
-          </el-menu-item>
-          <el-menu-item index="/documents/shared">
-            <el-icon><Share /></el-icon>
-            <template #title>共享给我</template>
-          </el-menu-item>
-        </el-sub-menu>
+        <el-menu-item index="/file-explorer">
+          <el-icon><Folder /></el-icon>
+          <template #title>文件管理</template>
+        </el-menu-item>
         
-        <el-sub-menu index="profile">
+        <el-menu-item index="/friends">
+          <el-icon><User /></el-icon>
           <template #title>
-            <el-icon><User /></el-icon>
-            <span>个人中心</span>
+            <span>我的好友</span>
+            <el-badge v-if="pendingCount > 0" :value="pendingCount" class="badge" />
           </template>
-          <el-menu-item index="/profile">
-            <el-icon><UserFilled /></el-icon>
-            <template #title>个人资料</template>
-          </el-menu-item>
-          <el-menu-item index="/friends">
-            <el-icon><Avatar /></el-icon>
-            <template #title>
-              <span>我的好友</span>
-              <el-badge v-if="pendingCount > 0" :value="pendingCount" class="badge" />
-            </template>
-          </el-menu-item>
-          <el-menu-item index="/messages">
-            <el-icon><ChatDotRound /></el-icon>
-            <template #title>
-              <span>消息中心</span>
-              <el-badge v-if="unreadMessageCount > 0" :value="unreadMessageCount" class="badge" />
-            </template>
-          </el-menu-item>
-          <el-menu-item index="/files">
-            <el-icon><FolderOpened /></el-icon>
-            <template #title>文件管理</template>
-          </el-menu-item>
-        </el-sub-menu>
+        </el-menu-item>
+        
+        <el-menu-item index="/messages">
+          <el-icon><ChatDotRound /></el-icon>
+          <template #title>
+            <span>消息中心</span>
+            <el-badge v-if="unreadMessageCount > 0" :value="unreadMessageCount" class="badge" />
+          </template>
+        </el-menu-item>
       </el-menu>
       
       <div class="collapse-btn" @click="isCollapse = !isCollapse">
@@ -249,25 +226,28 @@ function goToMessages() {
   flex-direction: column;
   transition: width 0.3s;
   overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   
   .logo-container {
-    height: 60px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
+    padding: 0 20px;
+    background: rgba(0, 0, 0, 0.2);
     
     .logo-icon {
-      font-size: 28px;
+      font-size: 32px;
       color: #409eff;
     }
     
     .logo-text {
-      margin-left: 10px;
-      font-size: 18px;
-      font-weight: bold;
+      margin-left: 12px;
+      font-size: 20px;
+      font-weight: 600;
       color: #fff;
       white-space: nowrap;
+      letter-spacing: 1px;
     }
   }
   
@@ -275,10 +255,15 @@ function goToMessages() {
     flex: 1;
     border-right: none;
     background: transparent;
+    overflow-y: auto;
     
     :deep(.el-menu-item),
     :deep(.el-sub-menu__title) {
       color: #bfcbd9;
+      height: 56px;
+      line-height: 56px;
+      margin: 4px 8px;
+      border-radius: 8px;
       
       &:hover {
         background-color: rgba(64, 158, 255, 0.1);
@@ -286,24 +271,34 @@ function goToMessages() {
       
       .el-icon {
         color: #bfcbd9;
+        font-size: 18px;
       }
     }
     
     :deep(.el-menu-item.is-active) {
       color: #409eff;
-      background-color: rgba(64, 158, 255, 0.2);
+      background: linear-gradient(90deg, rgba(64, 158, 255, 0.2) 0%, transparent 100%);
       
       .el-icon {
         color: #409eff;
       }
-    }
-    
-    :deep(.el-sub-menu.is-opened > .el-sub-menu__title) {
-      color: #fff;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: #409eff;
+      }
     }
     
     .badge {
       margin-left: 8px;
+      :deep(.el-badge__content) {
+        transform: translateY(-20%) translateX(50%);
+      }
     }
   }
   
@@ -315,10 +310,15 @@ function goToMessages() {
     cursor: pointer;
     color: #bfcbd9;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
     
     &:hover {
       color: #409eff;
       background-color: rgba(64, 158, 255, 0.1);
+    }
+    
+    .el-icon {
+      font-size: 18px;
     }
   }
 }
@@ -333,8 +333,27 @@ function goToMessages() {
   justify-content: space-between;
   background: #fff;
   border-bottom: 1px solid #e4e7ed;
-  padding: 0 20px;
-  height: 60px;
+  padding: 0 24px;
+  height: 64px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  .header-left {
+    :deep(.el-breadcrumb) {
+      font-size: 14px;
+      
+      .el-breadcrumb__inner {
+        color: #606266;
+        
+        &:hover {
+          color: #409eff;
+        }
+      }
+      
+      .el-breadcrumb__separator {
+        color: #C0C4CC;
+      }
+    }
+  }
   
   .header-right {
     display: flex;
@@ -351,10 +370,18 @@ function goToMessages() {
       display: flex;
       align-items: center;
       cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      
+      &:hover {
+        background: #f5f7fa;
+      }
       
       .username {
         margin: 0 8px;
         color: #606266;
+        font-weight: 500;
       }
     }
   }
@@ -362,7 +389,7 @@ function goToMessages() {
 
 .layout-main {
   background: #f5f7fa;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
 }
 </style>

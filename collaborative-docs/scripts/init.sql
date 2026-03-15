@@ -66,6 +66,36 @@ CREATE TABLE IF NOT EXISTS t_document_history (
     INDEX idx_create_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文档版本历史表';
 
+-- 评论表
+CREATE TABLE IF NOT EXISTS t_comment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '评论ID',
+    document_id BIGINT NOT NULL COMMENT '文档ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    text TEXT NOT NULL COMMENT '评论内容',
+    parent_id BIGINT COMMENT '父评论ID（顶级评论ID，用于分组）',
+    reply_to_id BIGINT COMMENT '回复的目标评论ID（用于标识回复的是哪条评论）',
+    like_count INT DEFAULT 0 COMMENT '点赞数',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '是否删除: 0-否, 1-是',
+    INDEX idx_document_id (document_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_reply_to_id (reply_to_id),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评论表';
+
+-- 评论点赞表
+CREATE TABLE IF NOT EXISTS t_comment_like (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '点赞ID',
+    comment_id BIGINT NOT NULL COMMENT '评论ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY uk_comment_user (comment_id, user_id),
+    INDEX idx_comment_id (comment_id),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评论点赞表';
+
 -- 好友关系表
 CREATE TABLE IF NOT EXISTS t_friendship (
     id BIGINT PRIMARY KEY COMMENT '关系 ID',

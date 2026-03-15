@@ -62,6 +62,11 @@ public class WebSocketMessage {
     private String error;
     
     /**
+     * 评论数据（用于实时评论通知）
+     */
+    private CommentData comment;
+    
+    /**
      * 时间戳
      */
     private long timestamp;
@@ -86,7 +91,11 @@ public class WebSocketMessage {
         REMOTE_OPERATION,  // 远程操作
         REMOTE_OPERATIONS, // 远程批量操作
         ONLINE_USERS,   // 在线用户列表
-        ERROR           // 错误
+        ERROR,          // 错误
+        
+        // 评论相关
+        COMMENT_ADDED,  // 新评论
+        COMMENT_REPLY   // 评论回复
     }
 
     /**
@@ -102,6 +111,37 @@ public class WebSocketMessage {
             this.userId = userId;
             this.username = username;
             this.siteId = siteId;
+        }
+    }
+    
+    /**
+     * 评论数据（用于 WebSocket 传输）
+     */
+    @Data
+    public static class CommentData {
+        private Long id;
+        private Long documentId;
+        private Long userId;
+        private String username;
+        private String avatarUrl;
+        private String text;
+        private Long parentId;
+        private Integer likeCount;
+        private Boolean liked;
+        private String createTime;
+        
+        public CommentData() {}
+        
+        public CommentData(Long id, Long documentId, Long userId, String username, 
+                          String text, Long parentId) {
+            this.id = id;
+            this.documentId = documentId;
+            this.userId = userId;
+            this.username = username;
+            this.text = text;
+            this.parentId = parentId;
+            this.likeCount = 0;
+            this.liked = false;
         }
     }
 }

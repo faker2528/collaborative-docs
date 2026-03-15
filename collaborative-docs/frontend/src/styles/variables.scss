@@ -1,0 +1,179 @@
+// 全局样式变量 - 企业级设计系统
+
+:root {
+  // 品牌色
+  --primary-color: #1677FF;        // 科技蓝
+  --primary-hover: #4096FF;        // 悬停色
+  --primary-active: #0958D9;       // 激活色
+  
+  // 功能色
+  --success-color: #52C41A;        // 成功绿
+  --warning-color: #FAAD14;        // 警告橙
+  --error-color: #F53F3F;          // 错误红
+  --info-color: #1677FF;           // 信息蓝
+  
+  // 中性色
+  --text-primary: #1F2329;         // 主要文字
+  --text-regular: #4E5969;         // 常规文字
+  --text-secondary: #86909C;       // 次要文字
+  --text-placeholder: #C9CDD4;     // 占位符文字
+  
+  // 背景色
+  --bg-body: #F2F3F5;              // 页面背景
+  --bg-container: #FFFFFF;         // 容器背景
+  --bg-hover: #F7F8FA;             // 悬停背景
+  
+  // 边框色
+  --border-light: #E5E6EB;         // 浅色边框
+  --border-base: #DCDFE6;          // 基础边框
+  --border-dark: #C0C4CC;          // 深色边框
+  
+  // 阴影
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  // 圆角
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  
+  // 间距
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  
+  // 字体
+  --font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  
+  // 过渡
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+// 重置样式
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background-color: var(--bg-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 滚动条美化
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-base);
+  border-radius: 3px;
+  
+  &:hover {
+    background: var(--border-dark);
+  }
+}
+
+// 通用工具类
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// Element Plus 覆盖样式
+.el-button--primary {
+  --el-button-bg-color: var(--primary-color);
+  --el-button-border-color: var(--primary-color);
+  --el-button-hover-bg-color: var(--primary-hover);
+  --el-button-hover-border-color: var(--primary-hover);
+  --el-button-active-bg-color: var(--primary-active);
+  --el-button-active-border-color: var(--primary-active);
+}
+
+.el-dialog {
+  border-radius: var(--radius-lg);
+  
+  .el-dialog__header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .el-dialog__body {
+    padding: var(--spacing-xl);
+  }
+  
+  .el-dialog__footer {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-top: 1px solid var(--border-light);
+  }
+}
+
+// 动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-base);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all var(--transition-base);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
